@@ -10,7 +10,16 @@ export type MoneyValue = {
  * Fixed-point decimal math on strings. Billing math never touches IEEE floats:
  * every value is parsed into a BigInt scaled to 6 decimal places.
  */
-export function parseDecimal(value: string): bigint {
+export function parseDecimal(value: string | number | bigint): bigint {
+  if (typeof value === "bigint") return value * SCALE;
+  // PostgREST serialises `numeric` columns as JSON numbers. toFixed(6) turns that back into the
+  // exact decimal text the database holds (numeric(20,6) never exceeds 15 significant digits
+  // for realistic invoice values), so no float arithmetic ever happens on the value itself.
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error(`Invalid decimal value: ${value}`);
+    return parseDecimal(value.toFixed(SCALE_DIGITS));
+  }
+  if (typeof value !== "string") throw new Error(`Invalid decimal value: ${String(value)}`);
   const normalized = value.trim();
   const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(normalized);
   if (!match) throw new Error(`Invalid decimal value: ${value}`);
@@ -18,6 +27,12 @@ export function parseDecimal(value: string): bigint {
   if (fraction.length > SCALE_DIGITS) throw new Error(`Decimal precision exceeds ${SCALE_DIGITS} places: ${value}`);
   const units = BigInt(match[2]) * SCALE + BigInt(fraction || "0");
   return match[1] === "-" ? -units : units;
+}
+
+/** Canonical decimal text for a value read from the database (numeric arrives as a JSON number). */
+export function decimalText(value: string | number | null | undefined): string | null {
+  if (value === null || value === undefined || value === "") return null;
+  return formatDecimal(parseDecimal(value));
 }
 
 export function formatDecimal(value: bigint): string {

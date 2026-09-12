@@ -3,6 +3,7 @@ import { writeAuditLog } from "@/lib/auth/workspace";
 import type { ContractRow, ContractTermRow, FindingRow, InvoiceLineRow, InvoiceRow, ModuleConfigRow } from "@/lib/db/types";
 import {
   allRecoveryRules,
+  decimalText,
   RULESET_VERSION,
   runRecoveryEngine,
   sumDecimals,
@@ -90,17 +91,17 @@ export async function auditInvoice(workspace: LiveWorkspace, invoiceId: string):
       currency: invoice.currency,
       chargeCode: row.charge_code ?? "UNSPECIFIED",
       description: row.description ?? "",
-      quantity: row.quantity,
+      quantity: decimalText(row.quantity),
       unit: row.unit,
-      unitPrice: row.unit_price,
-      billedAmount: row.billed_amount,
+      unitPrice: decimalText(row.unit_price),
+      billedAmount: decimalText(row.billed_amount) ?? "0",
       dimensions: row.dimensions ?? {},
       evidence,
     };
   });
 
   const priorInvoices: PriorInvoice[] = ((priorRows ?? []) as Array<Pick<InvoiceRow, "id" | "invoice_number" | "total" | "invoice_date" | "source_document_id">>)
-    .map((row) => ({ invoiceId: row.id, invoiceNumber: row.invoice_number, total: row.total, invoiceDate: row.invoice_date, documentId: row.source_document_id }));
+    .map((row) => ({ invoiceId: row.id, invoiceNumber: row.invoice_number, total: decimalText(row.total) ?? "0", invoiceDate: row.invoice_date, documentId: row.source_document_id }));
 
   const activeModules = ((moduleRows ?? []) as ModuleConfigRow[]).map((row) => row.module);
 
@@ -109,7 +110,7 @@ export async function auditInvoice(workspace: LiveWorkspace, invoiceId: string):
     vendorId: invoice.vendor_id,
     invoiceId: invoice.id,
     invoiceNumber: invoice.invoice_number,
-    invoiceTotal: invoice.total,
+    invoiceTotal: decimalText(invoice.total) ?? "0",
     invoiceDocumentId: invoice.source_document_id,
     currency: invoice.currency,
     activeModules,

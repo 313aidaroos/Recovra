@@ -56,10 +56,14 @@ export async function uploadDocumentAction(_previous: UploadState, formData: For
   const sha256 = await sha256Hex(bytes);
 
   const { data: existing } = await supabase
-    .from("documents").select("id, filename").eq("organization_id", organization.id).eq("sha256", sha256).maybeSingle();
+    .from("documents").select("id, filename, status, storage_path").eq("organization_id", organization.id).eq("sha256", sha256).maybeSingle();
   if (existing) {
-    const row = existing as Pick<DocumentRow, "id" | "filename">;
-    return { status: "duplicate", documentId: row.id, filename: row.filename, note: `This exact file (SHA-256 ${sha256.slice(0, 12)}…) was already ingested as ${row.filename}. Nothing was changed.` };
+    const row = existing as Pick<DocumentRow, "id" | "filename" | "status" | "storage_path">;
+    if (row.status !== "failed") {
+      return { status: "duplicate", documentId: row.id, filename: row.filename, note: `This exact file (SHA-256 ${sha256.slice(0, 12)}…) was already ingested as ${row.filename}. Nothing was changed.` };
+    }
+    // A previous attempt failed part-way: discard it (and anything derived from it) so the retry is clean.
+    await supabase.rpc("discard_failed_document", { p_document: row.id, p_delete_document: true });
   }
 
   const { data: created, error: createError } = await supabase
@@ -121,8 +125,11 @@ export async function uploadDocumentAction(_previous: UploadState, formData: For
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Processing failed.";
+    // Remove partially ingested invoices/contracts so nothing half-audited is reported as real data.
     await supabase.from("documents").update({ status: "failed", metadata: { size: file.size, mimeType: file.type, error: message } }).eq("id", documentId);
-    return { status: "error", documentId, filename: file.name, error: message };
+    await supabase.rpc("discard_failed_document", { p_document: documentId, p_delete_document: false });
+    await writeAuditLog(workspace, "document.failed", { type: "document", id: documentId }, { filename: file.name, error: message });
+    return { status: "error", documentId, filename: file.name, error: `${message} The file was kept for review; fix the data and upload again to retry.` };
   }
 
   revalidatePath("/dashboard");

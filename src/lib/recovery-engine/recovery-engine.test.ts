@@ -7,8 +7,10 @@ import {
   logisticsFuelSurchargeRule,
   logisticsRateVarianceRule,
   logisticsUnapprovedAccessorialRule,
+  decimalText,
   normalizeDecimalInput,
   runRecoveryEngine,
+  sumDecimals,
   type AuditContext,
   type ChargeLine,
   type ContractTerm,
@@ -54,6 +56,18 @@ function context(lines: ChargeLine[], terms: ContractTerm[], overrides: Partial<
     ...overrides,
   };
 }
+
+describe("database numerics", () => {
+  it("accepts JSON numbers from PostgREST without float arithmetic", () => {
+    expect(decimalText(4315)).toBe("4315");
+    expect(decimalText(0.1)).toBe("0.1");
+    expect(decimalText(2650.5)).toBe("2650.5");
+    expect(decimalText(null)).toBeNull();
+    expect(sumDecimals([0.1, 0.2] as unknown as string[])).toBe("0.3");
+    expect(sumDecimals([4315, "72.50", 95] as unknown as string[])).toBe("4482.5");
+    expect(() => decimalText(Number.NaN)).toThrow("Invalid decimal value");
+  });
+});
 
 describe("rate variance", () => {
   it("produces an exact deterministic variance from quantity × contracted rate", () => {

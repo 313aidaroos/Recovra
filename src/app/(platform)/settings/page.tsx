@@ -7,11 +7,11 @@ import { loadMembers } from "@/lib/db/resources";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
   const workspace = await getWorkspace();
   if (workspace.mode === "live") {
-    const members = await loadMembers(workspace);
-    return <SettingsPanel workspace={workspace} members={members}/>;
+    const [members, { saved }] = await Promise.all([loadMembers(workspace), searchParams]);
+    return <SettingsPanel workspace={workspace} members={members} savedMessage={saved === "organization" ? "Organization settings saved." : null}/>;
   }
   return (
     <>

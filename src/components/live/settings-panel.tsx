@@ -5,9 +5,10 @@ import { formatDate, formatMoney } from "@/lib/format";
 import { ADMIN_ROLES, APPROVER_ROLES, WRITER_ROLES } from "@/types/workspace";
 import { PageHeader } from "../ui/page-header";
 import { StatusBadge } from "../ui/status-badge";
+import { FormStatus } from "../auth/form-status";
 import { AddMemberForm, OrganizationForm } from "./settings-forms";
 
-export function SettingsPanel({ workspace, members }: { workspace: LiveWorkspace; members: MemberListItem[] }) {
+export function SettingsPanel({ workspace, members, savedMessage = null }: { workspace: LiveWorkspace; members: MemberListItem[]; savedMessage?: string | null }) {
   const { organization, role } = workspace;
   const isAdmin = ADMIN_ROLES.includes(role);
 
@@ -24,7 +25,8 @@ export function SettingsPanel({ workspace, members }: { workspace: LiveWorkspace
         <div className="settings-stack">
           <article className="panel settings-form" id="organization">
             <div className="panel-title-row"><div><span className="panel-kicker">Organization profile</span><h3>{organization.name}</h3></div><StatusBadge tone="good">Live workspace</StatusBadge></div>
-            <OrganizationForm organization={organization} disabled={!isAdmin}/>
+            {savedMessage && <FormStatus state={{ message: savedMessage }}/>}
+            <OrganizationForm key={`${organization.name}|${organization.currency}|${organization.review_threshold}`} organization={organization} disabled={!isAdmin}/>
             {!isAdmin && <p className="muted-note">Only owners and admins can change organization settings. Your role: {role}.</p>}
           </article>
 

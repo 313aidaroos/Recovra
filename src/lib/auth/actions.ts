@@ -1,9 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { ACTIVE_ORG_COOKIE, getWorkspace, requireLiveWorkspace } from "./workspace";
+import { ACTIVE_ORG_COOKIE, getWorkspace, requireLiveWorkspace, writeAuditLog } from "./workspace";
 import { ADMIN_ROLES, ORGANIZATION_ROLES, type OrganizationRole } from "@/types/workspace";
 
 export type AuthFormState = { error?: string; message?: string };
@@ -132,5 +133,8 @@ export async function updateOrganizationAction(_previous: AuthFormState, formDat
     .update({ name, currency, review_threshold: threshold })
     .eq("id", workspace.organization.id);
   if (error) return { error: error.message };
-  return { message: "Organization settings saved." };
+  await writeAuditLog(workspace, "organization.updated", { type: "organization", id: workspace.organization.id }, { name, currency, review_threshold: threshold });
+  // The workspace context is memoised per request, so re-render from a fresh request.
+  revalidatePath("/", "layout");
+  redirect("/settings?saved=organization");
 }
