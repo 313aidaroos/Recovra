@@ -1,14 +1,26 @@
 import { ArrowRight, FileCheck2, FileText, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
+import { InvoiceDetail } from "@/components/live/invoice-detail";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { getWorkspace } from "@/lib/auth/workspace";
+import { createSignedDocumentUrl, loadInvoiceDetail } from "@/lib/db/resources";
 import { invoices } from "@/lib/platform-data";
 
-export function generateStaticParams() {
-  return invoices.map(([id]) => ({ id }));
-}
+export const dynamic = "force-dynamic";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const workspace = await getWorkspace();
+
+  if (workspace.mode === "live" && UUID.test(id)) {
+    const data = await loadInvoiceDetail(workspace, id);
+    if (!data) notFound();
+    const documentUrl = data.document ? await createSignedDocumentUrl(workspace, data.document) : null;
+    return <InvoiceDetail data={data} role={workspace.role} documentUrl={documentUrl}/>;
+  }
+
   const invoice = invoices.find((row) => row[0] === id);
   if (!invoice) notFound();
   const [number,vendor,amount,date,status,discrepancy,contract,findings] = invoice;
