@@ -3,6 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      // Invoice and rate-sheet uploads run through server actions so RLS applies to every write.
+      bodySizeLimit: "26mb",
+    },
+  },
   async headers() {
     return [
       {
