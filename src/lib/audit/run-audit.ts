@@ -127,7 +127,7 @@ export async function auditInvoice(workspace: LiveWorkspace, invoiceId: string):
   const auditRunId = (runRow as { id: string }).id;
 
   const result = runRecoveryEngine(context, allRecoveryRules);
-  const persisted = await persistFindings(workspace, auditRunId, invoice, result.findings);
+  await persistFindings(workspace, auditRunId, invoice, result.findings);
 
   const totalVariance = sumDecimals(result.findings.map((finding) => finding.variance));
   await supabase.from("audit_runs").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", auditRunId);
