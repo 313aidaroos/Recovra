@@ -62,8 +62,9 @@ export async function uploadDocumentAction(_previous: UploadState, formData: For
     if (row.status !== "failed") {
       return { status: "duplicate", documentId: row.id, filename: row.filename, note: `This exact file (SHA-256 ${sha256.slice(0, 12)}…) was already ingested as ${row.filename}. Nothing was changed.` };
     }
-    // A previous attempt failed part-way: discard it (and anything derived from it) so the retry is clean.
-    await supabase.rpc("discard_failed_document", { p_document: row.id, p_delete_document: true });
+    // A previous attempt failed part-way: release it (and anything derived from it) so the retry is clean.
+    const { error: discardError } = await supabase.rpc("discard_failed_document", { p_document: row.id, p_delete_document: true });
+    if (discardError) return { status: "error", error: `Could not clear the earlier failed upload: ${discardError.message}` };
   }
 
   const { data: created, error: createError } = await supabase

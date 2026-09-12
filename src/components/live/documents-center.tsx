@@ -6,6 +6,7 @@ import { StatusBadge } from "../ui/status-badge";
 import { UploadForm } from "./upload-form";
 
 const statusTone = (status: string) => status === "complete" || status === "stored" ? "good" : status === "needs_review" || status === "parsing" ? "warn" : status === "failed" ? "risk" : "neutral";
+const describeStatus = (status: string) => status === "discarded" ? "Discarded (retried)" : titleCase(status);
 
 function describeMetadata(document: DocumentListItem) {
   const metadata = document.metadata ?? {};
@@ -58,7 +59,7 @@ export function DocumentsCenter({ documents, currency, canUpload, signedUrls }: 
               <td><strong>{document.filename}</strong><small className="cell-sub">{document.sha256 ? `SHA-256 ${document.sha256.slice(0, 16)}…` : ""}</small></td>
               <td><span className="module-pill">{titleCase(document.kind)}</span></td>
               <td>{document.vendorName ?? <span className="muted">—</span>}</td>
-              <td><StatusBadge tone={statusTone(document.status)}>{titleCase(document.status)}</StatusBadge></td>
+              <td><StatusBadge tone={statusTone(document.status)}>{describeStatus(document.status)}</StatusBadge></td>
               <td><span className="muted">{describeMetadata(document)}</span></td>
               <td>{formatDateTime(document.created_at)}</td>
               <td>{signedUrls[document.id] ? <a className="table-action" href={signedUrls[document.id] ?? undefined} target="_blank" rel="noreferrer">Open</a> : <span className="muted">—</span>}</td>

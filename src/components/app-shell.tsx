@@ -142,7 +142,7 @@ export function AppShell({ children, workspace }: { children: React.ReactNode; w
           {live ? (
             <form action={signOutAction} className="user-menu">
               <span className="avatar" title={workspace.userEmail}>{workspace.userInitials}</span>
-              <button type="submit" className="icon-button" aria-label="Sign out" title="Sign out"><LogOut size={16}/></button>
+              <button type="submit" className="secondary-button tall signout-button" aria-label="Sign out" title="Sign out"><LogOut size={15}/><span>Sign out</span></button>
             </form>
           ) : (
             <span className="avatar">AA</span>
