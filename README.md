@@ -25,6 +25,26 @@ Open `http://localhost:3000`.
 
 > After `npm install`, commit the generated lockfile. Dependencies are pinned in `package.json`; update deliberately.
 
+## Quality checks
+
+```bash
+npm run lint
+npm test
+npm run typecheck
+npm run build
+```
+
+## Current product foundation
+
+- Public enterprise landing page and configurable pricing presentation
+- Responsive command center with opportunities, pipeline, activity, module, document, and vendor intelligence
+- Recovery opportunities with source evidence, deterministic calculation trace, claim draft, and human approval gate
+- Invoice, contract, vendor, document, integration, reporting, module, recovery, and settings routes
+- Shared recovery-engine contracts with a fixed-point logistics rate-variance rule
+- Organization-scoped Supabase starter schema with RLS enabled on every exposed business table
+
+All organizations, companies, metrics, findings, and recoveries currently shown in the interface are **sample/demo data**. The only API under `/api/demo` is intentionally a sample adapter. It must not be represented as a production audit or customer result.
+
 ## Recommended production stack
 
 - Next.js App Router

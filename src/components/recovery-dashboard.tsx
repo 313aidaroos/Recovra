@@ -134,6 +134,27 @@ export function RecoveryDashboard() {
           </div>
         </article>
       </section>
+
+      <section className="intelligence-grid">
+        <article className="panel">
+          <div className="panel-title-row"><div><span className="panel-kicker">Spend by industry</span><h3>Monitored coverage</h3></div><Link href="/reports">Analyze <ArrowRight size={14}/></Link></div>
+          <div className="distribution-list">
+            {[["Logistics","32%","#79e2a7"],["Technology","25%","#65a9dc"],["Manufacturing","18%","#f2c66d"],["Telecom","14%","#aa8ee8"],["Other","11%","#71867b"]].map(([label,value,color])=><div key={label}><span>{label}</span><i><b style={{width:value,background:color}}/></i><strong>{value}</strong></div>)}
+          </div>
+        </article>
+        <article className="panel">
+          <div className="panel-title-row"><div><span className="panel-kicker">Recovery pipeline</span><h3>Value by stage</h3></div><Link href="/recoveries">Open center <ArrowRight size={14}/></Link></div>
+          <div className="mini-pipeline">
+            {[["Detected","$746K","100%"],["Verified","$575K","77%"],["Submitted","$501K","67%"],["Recovered","$482K","65%"]].map(([label,value,width])=><div key={label}><span>{label}</span><strong>{value}</strong><i><b style={{width}}/></i></div>)}
+          </div>
+        </article>
+        <article className="panel">
+          <div className="panel-title-row"><div><span className="panel-kicker">Vendor anomaly watch</span><h3>Highest risk signals</h3></div><Link href="/vendors">All vendors <ArrowRight size={14}/></Link></div>
+          <div className="risk-list">
+            {[["Veridian Wireless","81","Inactive lines recurring"],["NorthStar Parcel","78","Surcharge variance"],["Rapid 3PL","71","Inventory mismatch"]].map(([vendor,score,signal])=><Link href="/vendors" key={vendor}><span className="risk-score">{score}</span><div><strong>{vendor}</strong><small>{signal}</small></div><StatusBadge tone={Number(score)>79?"risk":"warn"}>{Number(score)>79?"High":"Elevated"}</StatusBadge></Link>)}
+          </div>
+        </article>
+      </section>
     </>
   );
 }

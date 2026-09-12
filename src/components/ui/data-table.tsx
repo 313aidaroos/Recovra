@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { StatusBadge } from "./status-badge";
 
 type DataTableProps = {
@@ -6,6 +7,7 @@ type DataTableProps = {
   statusColumns?: number[];
   moneyColumns?: number[];
   firstColumnLabel?: string;
+  hrefPrefix?: string;
 };
 
 export function DataTable({
@@ -14,6 +16,7 @@ export function DataTable({
   statusColumns = [],
   moneyColumns = [],
   firstColumnLabel,
+  hrefPrefix,
 }: DataTableProps) {
   return (
     <div className="table-wrap">
@@ -28,7 +31,7 @@ export function DataTable({
                 <td className={moneyColumns.includes(columnIndex) ? "money-good" : undefined} key={`${cell}-${columnIndex}`}>
                   {columnIndex === 0 ? (
                     <>
-                      <strong>{cell}</strong>
+                      {hrefPrefix ? <Link href={`${hrefPrefix}/${encodeURIComponent(cell)}`}><strong>{cell}</strong></Link> : <strong>{cell}</strong>}
                       {firstColumnLabel && <small className="cell-sub">{firstColumnLabel}</small>}
                     </>
                   ) : statusColumns.includes(columnIndex) ? (

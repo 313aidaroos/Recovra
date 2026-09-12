@@ -14,6 +14,7 @@ type ResourcePageProps = {
   rows: string[][];
   statusColumns?: number[];
   moneyColumns?: number[];
+  hrefPrefix?: string;
   children?: React.ReactNode;
 };
 
@@ -26,6 +27,7 @@ export function ResourcePage({
   rows,
   statusColumns,
   moneyColumns,
+  hrefPrefix,
   children,
 }: ResourcePageProps) {
   const [query, setQuery] = useState("");
@@ -40,7 +42,7 @@ export function ResourcePage({
           <label className="search-input"><Search size={16}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Search ${title.toLowerCase()}…`}/></label>
           <div className="filter-row"><button><Filter size={15}/> Filters</button><select aria-label="Select date range"><option>Last 90 days</option><option>This year</option><option>All time</option></select></div>
         </div>
-        <DataTable columns={columns} rows={filtered} statusColumns={statusColumns} moneyColumns={moneyColumns}/>
+        <DataTable columns={columns} rows={filtered} statusColumns={statusColumns} moneyColumns={moneyColumns} hrefPrefix={hrefPrefix}/>
       </section>
     </>
   );
