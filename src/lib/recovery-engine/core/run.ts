@@ -1,23 +1,48 @@
-import type { ChargeCandidate, RecoveryRule, RuleFinding } from "./types";
+import type { AuditContext, RecoveryRule, RuleFinding } from "./types";
 
 export type RecoveryEngineResult = {
   organizationId: string;
-  chargeId: string;
+  invoiceId: string;
   findings: RuleFinding[];
   rulesEvaluated: string[];
+  rulesSkipped: string[];
 };
 
-export function runRecoveryEngine(candidate: ChargeCandidate, rules: RecoveryRule[]): RecoveryEngineResult {
-  if (!candidate.organizationId) throw new Error("organizationId is required");
-  const applicable = rules.filter((rule) => rule.module === candidate.module);
-  const findings = applicable
-    .map((rule) => rule.evaluate(candidate))
-    .filter((finding): finding is RuleFinding => finding !== null);
+/**
+ * Deterministic orchestration: every active rule sees every line and the same context.
+ * Rules are pure functions; persistence, AI explanation and workflow live outside the engine.
+ */
+export function runRecoveryEngine(context: AuditContext, rules: RecoveryRule[]): RecoveryEngineResult {
+  if (!context.organizationId) throw new Error("organizationId is required");
+  if (!context.invoiceId) throw new Error("invoiceId is required");
+
+  const active = rules.filter((rule) => context.activeModules.includes(rule.module));
+  const skipped = rules.filter((rule) => !context.activeModules.includes(rule.module));
+  const findings: RuleFinding[] = [];
+
+  for (const rule of active) {
+    if (rule.scope === "invoice") {
+      findings.push(...rule.evaluate(context));
+      continue;
+    }
+    for (const line of context.lines) {
+      const finding = rule.evaluate(line, context);
+      if (finding) findings.push(finding);
+    }
+  }
+
+  const seen = new Set<string>();
+  const deduped = findings.filter((finding) => {
+    if (seen.has(finding.dedupeKey)) return false;
+    seen.add(finding.dedupeKey);
+    return true;
+  });
 
   return {
-    organizationId: candidate.organizationId,
-    chargeId: candidate.chargeId,
-    findings,
-    rulesEvaluated: applicable.map((rule) => `${rule.id}@${rule.version}`),
+    organizationId: context.organizationId,
+    invoiceId: context.invoiceId,
+    findings: deduped,
+    rulesEvaluated: active.map((rule) => `${rule.id}@${rule.version}`),
+    rulesSkipped: skipped.map((rule) => `${rule.id}@${rule.version}`),
   };
 }
