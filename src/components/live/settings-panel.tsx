@@ -6,7 +6,7 @@ import { ADMIN_ROLES, APPROVER_ROLES, WRITER_ROLES } from "@/types/workspace";
 import { PageHeader } from "../ui/page-header";
 import { StatusBadge } from "../ui/status-badge";
 import { FormStatus } from "../auth/form-status";
-import { AddMemberForm, OrganizationForm } from "./settings-forms";
+import { AddMemberForm, ChangePasswordForm, OrganizationForm } from "./settings-forms";
 
 export function SettingsPanel({ workspace, members, savedMessage = null }: { workspace: LiveWorkspace; members: MemberListItem[]; savedMessage?: string | null }) {
   const { organization, role } = workspace;
@@ -58,7 +58,9 @@ export function SettingsPanel({ workspace, members, savedMessage = null }: { wor
           </article>
 
           <article className="panel settings-form" id="security">
-            <div className="panel-title-row"><div><span className="panel-kicker">Security</span><h3>Tenant isolation</h3></div></div>
+            <div className="panel-title-row"><div><span className="panel-kicker">Security</span><h3>Your sign-in</h3></div><StatusBadge tone="neutral">{workspace.user.email}</StatusBadge></div>
+            <ChangePasswordForm/>
+            <div className="panel-title-row" style={{ marginTop: 24 }}><div><span className="panel-kicker">Platform controls</span><h3>Tenant isolation</h3></div></div>
             <div className="guardrail-list">
               <div><ShieldCheck size={15}/><div><strong>Row-level security on every table</strong><small>Postgres policies scope each query to organizations you belong to; the app never uses a service-role key.</small></div></div>
               <div><ShieldCheck size={15}/><div><strong>Private document storage</strong><small>Files are stored under your organization’s folder and served only through short-lived signed URLs.</small></div></div>

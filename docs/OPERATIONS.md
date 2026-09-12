@@ -6,19 +6,26 @@ Production: https://recovra-three.vercel.app · Database/Auth/Storage: Supabase 
 
 | Variable | Scope | Notes |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Production, Preview | `https://ewvgpfufzeyzyutjxuoh.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Production, Preview | Publishable (`sb_publishable_…`) key only. Browser-safe by design. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Production, Preview | Optional override. Defaults to `https://ewvgpfufzeyzyutjxuoh.supabase.co` (committed in `src/lib/supabase/env.ts`). |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Production, Preview | Optional override. Defaults to the production publishable (`sb_publishable_…`) key, which is browser-safe by design. |
+| `RECOVRA_FORCE_DEMO` | any | Set to `1` to force the labelled demo workspace (e.g. a marketing-only deployment). |
 | `RECOVRA_AI_PROVIDER`, `RECOVRA_AI_API_KEY` | Production | Optional. Enables the Document Agent for PDF/scan extraction. Server-only. |
 
 Never add a Supabase secret / service-role key to Vercel or to any `NEXT_PUBLIC_*` variable.
-When these variables are absent the app runs in clearly labelled demo mode.
+With no variables set, a deployment connects to the production Supabase project automatically.
 
 ## 2. Supabase Auth configuration (dashboard → Authentication → URL Configuration)
 
 - Site URL: `https://recovra-three.vercel.app`
 - Redirect URLs: `https://recovra-three.vercel.app/auth/callback`, `https://*.vercel.app/auth/callback` (previews), `http://localhost:3000/auth/callback`
 - Email: either disable "Confirm email" for a frictionless pilot, or configure custom SMTP so
-  confirmation and magic-link emails are delivered reliably (the built-in sender is rate-limited).
+  confirmation and magic-link emails are delivered reliably (the built-in sender is rate-limited to a
+  few emails per hour and rejects addresses it considers undeliverable).
+- Until the redirect URL is added, confirmation links still confirm the account server-side; users
+  then return to the site and sign in with their password (the signup screen says so).
+- Bootstrapping accounts without email: an owner/admin can add teammates who already have accounts
+  (Settings → Members). Accounts can also be created confirmed via SQL in the Supabase SQL editor
+  (see `supabase/README.md`); users then rotate the password in Settings → Security.
 
 ## 3. Monitoring
 

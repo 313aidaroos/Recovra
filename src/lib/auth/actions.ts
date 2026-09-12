@@ -51,7 +51,9 @@ export async function signUpAction(_previous: AuthFormState, formData: FormData)
   });
   if (error) return { error: error.message };
   if (data.session) redirect("/onboarding");
-  return { message: "Check your inbox to confirm your email, then sign in to create your organization." };
+  // The confirmation link verifies the account server-side even if the page it lands on is not
+  // this deployment, so a password sign-in afterwards always works.
+  return { message: `Account created. We emailed a confirmation link to ${email}. Click it, then come back to this site and sign in with your password to create your organization.` };
 }
 
 export async function sendMagicLinkAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -65,7 +67,19 @@ export async function sendMagicLinkAction(_previous: AuthFormState, formData: Fo
     options: { emailRedirectTo: `${origin}/auth/callback?next=/dashboard` },
   });
   if (error) return { error: error.message };
-  return { message: "Magic link sent. Open the email on this device to sign in." };
+  return { message: "Magic link sent. Open the email on this device to sign in. If the link does not open this site, sign in with your password instead." };
+}
+
+export async function changePasswordAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const supabase = await createServerSupabase();
+  if (!supabase) return { error: "Authentication is not configured for this deployment." };
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm_password") ?? "");
+  if (password.length < 10) return { error: "Use at least 10 characters." };
+  if (password !== confirm) return { error: "The two passwords do not match." };
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: error.message };
+  return { message: "Password updated. Use it the next time you sign in." };
 }
 
 export async function signOutAction() {

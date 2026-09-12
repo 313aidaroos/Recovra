@@ -39,3 +39,15 @@ The Supabase linter intentionally reports four `SECURITY DEFINER` functions call
 signed-in users: `create_organization`, `add_organization_member` (both verify
 `auth.uid()` and the caller's role internally) and the boolean helpers `is_org_member`,
 `has_org_role` (which only answer about the caller's own memberships).
+
+## Creating a confirmed account without email (bootstrap)
+
+Run in the SQL editor, then have the person change the password in Settings → Security:
+
+```sql
+insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
+values (gen_random_uuid(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+  'person@company.com', extensions.crypt('<temporary password>', extensions.gen_salt('bf')), now(),
+  '{"provider":"email","providers":["email"]}', '{"full_name":"Person Name"}', now(), now(), '', '', '', '');
+```

@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { UserPlus } from "lucide-react";
-import { addMemberAction, updateOrganizationAction, type AuthFormState } from "@/lib/auth/actions";
+import { KeyRound, UserPlus } from "lucide-react";
+import { addMemberAction, changePasswordAction, updateOrganizationAction, type AuthFormState } from "@/lib/auth/actions";
 import { ORGANIZATION_ROLES } from "@/types/workspace";
 import type { Organization } from "@/types/workspace";
 import { FormStatus } from "../auth/form-status";
@@ -28,6 +28,18 @@ export function OrganizationForm({ organization, disabled }: { organization: Org
       </label>
       <FormStatus state={state}/>
       {!disabled && <button className="primary-button" type="submit" disabled={pending}>{pending ? "Saving…" : "Save changes"}</button>}
+    </form>
+  );
+}
+
+export function ChangePasswordForm() {
+  const [state, action, pending] = useActionState(changePasswordAction, initial);
+  return (
+    <form action={action} className="workflow-form">
+      <label className="field-label">New password<input name="password" type="password" autoComplete="new-password" minLength={10} required placeholder="At least 10 characters"/></label>
+      <label className="field-label">Confirm new password<input name="confirm_password" type="password" autoComplete="new-password" minLength={10} required/></label>
+      <FormStatus state={state}/>
+      <button className="primary-button" type="submit" disabled={pending}><KeyRound size={15}/> {pending ? "Updating…" : "Update password"}</button>
     </form>
   );
 }
