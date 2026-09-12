@@ -21,6 +21,7 @@ import { StatusBadge } from "../ui/status-badge";
 
 export function OpportunityDetail({ opportunity }: { opportunity: Opportunity }) {
   const [approved, setApproved] = useState(false);
+  const [prepared, setPrepared] = useState(false);
   const [activeTab, setActiveTab] = useState("Overview");
   const variance = opportunity.invoicedAmount - opportunity.expectedAmount;
 
@@ -80,11 +81,14 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
           <article className="panel action-card">
             <span className="panel-kicker">Recommended next action</span><h3>Approve claim package</h3><p>{opportunity.recommendedAction}</p>
             <label className="approval-check"><input type="checkbox" checked={approved} onChange={(event) => setApproved(event.target.checked)}/><span>{approved && <Check size={13}/>}</span><div><strong>I reviewed the evidence</strong><small>Required before a claim can be prepared for submission.</small></div></label>
-            <button className="primary-button wide" disabled={!approved}><Send size={15}/> Prepare approved claim</button>
+            <button className="primary-button wide" disabled={!approved || prepared} onClick={() => setPrepared(true)}>
+              {prepared ? <><CheckCircle2 size={15}/> Prepared for review</> : <><Send size={15}/> Prepare approved claim</>}
+            </button>
+            {prepared && <p className="prepared-note" role="status">Draft prepared locally. No claim was submitted or sent to the vendor.</p>}
             <div className="human-control"><LockKeyhole size={14}/> Recovra will never submit without human approval.</div>
           </article>
           <article className="panel claim-draft">
-            <div className="panel-title-row"><div><span className="panel-kicker">Claim draft</span><h3>Vendor review request</h3></div><StatusBadge tone="neutral">Draft</StatusBadge></div>
+            <div className="panel-title-row"><div><span className="panel-kicker">Claim draft</span><h3>Vendor review request</h3></div><StatusBadge tone={prepared ? "good" : "neutral"}>{prepared ? "Prepared" : "Draft"}</StatusBadge></div>
             <p><strong>Subject:</strong> Review request for invoice {opportunity.invoice}</p>
             <p>We identified a {money(opportunity.potentialRecovery)} discrepancy between billed residential surcharges and the active agreement. The attached package includes the relevant clause, affected lines, and calculation trace.</p>
             <button className="secondary-button tall"><FileText size={15}/> Open editor</button>
