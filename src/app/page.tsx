@@ -1,23 +1,122 @@
 import Link from "next/link";
-import { ArrowRight, Bot, CheckCircle2, Cloud, CreditCard, FileSearch2, ReceiptText, ScanSearch, ShieldCheck, Truck } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  Bot,
+  Boxes,
+  Building2,
+  CheckCircle2,
+  Cloud,
+  Construction,
+  CreditCard,
+  FileSearch2,
+  Hotel,
+  RadioTower,
+  ScanSearch,
+  ShieldCheck,
+  ShoppingCart,
+  Sparkles,
+  Truck,
+  Zap,
+} from "lucide-react";
 import { Brand } from "@/components/brand";
 
-export default function Home(){
- return <main className="marketing">
-  <nav className="marketing-nav"><Brand/><div className="marketing-links"><a href="#platform">Platform</a><a href="#modules">Modules</a><a href="#how">How it works</a></div><Link className="nav-cta" href="/dashboard">Open demo <ArrowRight size={15}/></Link></nav>
-  <section className="hero">
-   <div className="hero-glow"/><div className="hero-copy"><span className="hero-badge"><i/> Recovery intelligence for every dollar</span><h1>Stop paying for <em>what you never owed.</em></h1><p>Recovra compares contracts, invoices and real-world usage to find financial leakage, prove it, recover it and stop it from happening again.</p><div className="hero-actions"><Link className="primary-cta" href="/dashboard">Explore command center <ArrowRight size={17}/></Link><a className="ghost-cta" href="#how">See how it works</a></div><div className="trust-row"><span><CheckCircle2 size={15}/> Evidence-backed</span><span><CheckCircle2 size={15}/> Multi-vertical</span><span><CheckCircle2 size={15}/> Built for prevention</span></div></div>
-   <div className="hero-console"><div className="console-top"><span><i/> Live recovery feed</span><small>Demo environment</small></div><div className="console-money"><small>Value protected this quarter</small><strong>$664,544</strong><span>+27.4% vs prior quarter</span></div><div className="console-grid"><div><small>Recovered</small><strong>$481.9K</strong></div><div><small>Prevented</small><strong>$182.6K</strong></div></div><div className="console-event"><span className="event-icon"><ScanSearch size={18}/></span><div><strong>$24,180 opportunity verified</strong><small>NorthStar Parcel · fuel surcharge mismatch</small></div><span>98%</span></div><div className="console-event"><span className="event-icon"><ShieldCheck size={18}/></span><div><strong>$8,440 future spend prevented</strong><small>SaaS renewal · 126 inactive seats</small></div><span>Saved</span></div></div>
-  </section>
-  <section className="platform-strip" id="platform"><span>ONE RECOVERY ENGINE</span><div>{[[Truck,"Logistics"],[Bot,"AI Spend"],[Cloud,"Cloud"],[ReceiptText,"AP"],[CreditCard,"Payments"],[FileSearch2,"Contracts"]].map(([Icon,label]:any)=><div key={label}><Icon size={20}/>{label}</div>)}</div></section>
-  <section className="feature-section" id="how"><div className="section-head"><span className="eyebrow">The Recovra loop</span><h2>From messy spend to money recovered.</h2><p>One workflow, reused across industries.</p></div><div className="step-grid">{[
-   ["01","Connect","Invoices, contracts, rate sheets, POs and operational data."],
-   ["02","Reconcile","Calculate expected cost from terms and actual activity."],
-   ["03","Prove","Attach source evidence and a reproducible calculation trail."],
-   ["04","Recover","Create, approve and track the claim to realized value."],
-   ["05","Prevent","Run the same controls before payment and renewal."],
-  ].map(([n,t,d])=><article key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></article>)}</div></section>
-  <section className="wide-cta" id="modules"><div><span className="eyebrow">Built to expand</span><h2>Freight is the wedge. Recovery is the platform.</h2><p>Start where the pain is obvious, then extend the same engine across technology, procurement, payments, utilities, manufacturing and multi-location operations.</p></div><Link href="/modules">Explore 18 modules <ArrowRight size={17}/></Link></section>
-  <footer><Brand/><p>Find overcharges. Recover savings. Control spend.</p><span>© 2026 Recovra</span></footer>
- </main>
+const categoryRecoveries = [
+  ["Logistics", "$2,418,320"],
+  ["Technology", "$1,237,884"],
+  ["SaaS", "$934,110"],
+  ["Telecom", "$421,339"],
+  ["Manufacturing", "$812,665"],
+  ["Retail & Hospitality", "$694,221"],
+];
+
+const industries = [
+  [Truck, "Logistics", "Freight, parcel, 3PL, fleet & more"],
+  [Cloud, "Technology", "Cloud, AI, SaaS and software"],
+  [RadioTower, "Telecom", "Mobile, internet, fiber and IoT"],
+  [ShoppingCart, "Ecommerce", "Marketplaces, fulfillment and payments"],
+  [Boxes, "Manufacturing", "Suppliers, materials, equipment and energy"],
+  [Construction, "Construction", "Contracts, equipment and materials"],
+  [Hotel, "Hospitality", "Hotels, restaurants and multi-location spend"],
+  [Building2, "Retail", "Location-level vendors and operations"],
+];
+
+export default function Home() {
+  return (
+    <main className="marketing">
+      <nav className="marketing-nav">
+        <Brand/>
+        <div className="marketing-links">
+          <a href="#platform">Platform</a><a href="#industries">Industries</a><a href="#how">How It Works</a><a href="#customers">Customers</a><a href="#resources">Resources</a><Link href="/pricing">Pricing</Link>
+        </div>
+        <div className="marketing-actions"><Link href="/dashboard">Login</Link><Link className="nav-cta" href="/dashboard">Get Started <ArrowRight size={15}/></Link></div>
+      </nav>
+
+      <section className="hero enterprise-hero">
+        <div className="hero-copy">
+          <span className="hero-badge"><i/> The recovery intelligence platform</span>
+          <h1>Find overcharges.<br/>Recover savings.<br/><em>Control spend.</em></h1>
+          <p>Recovra uses AI and automation to audit contracts, invoices, and real-world activity across every vendor—so your team can recover what you’re owed and prevent waste before it happens.</p>
+          <div className="hero-actions"><a className="primary-cta" href="#how">See How It Works <ArrowRight size={17}/></a><Link className="ghost-cta" href="/dashboard">Book a Demo</Link></div>
+          <div className="hero-proof">
+            <div><strong>$1.2B+</strong><small>Illustrative spend monitored</small></div>
+            <div><strong>80%</strong><small>Sample time saved</small></div>
+            <div><strong>98%</strong><small>Demo retention metric</small></div>
+          </div>
+        </div>
+        <div className="recovery-globe" aria-label="Illustrative global recovery network">
+          <div className="globe-orb"><i/><i/><i/><i/><span/><span/></div>
+          <article className="hero-recovery-card">
+            <div><span>Sample recovery activity</span><small>Demo data</small></div>
+            {categoryRecoveries.map(([category, value]) => <p key={category}><span>{category}</span><strong>+{value}</strong></p>)}
+            <footer><span>Total recovered</span><strong>$5,518,539</strong></footer>
+          </article>
+          <div className="hero-signal"><BarChart3 size={22}/><div><strong>Not just audits.</strong><small>A stronger bottom line.</small></div><ArrowRight size={14}/></div>
+        </div>
+      </section>
+
+      <section className="trust-strip">
+        <span>Illustrative enterprise ecosystem</span>
+        <div>{["NORTHSTAR","FOUNDRY","NIMBUS","VERIDIAN","DATADESK","RAPID","SUMMIT","MERIDIAN"].map((name) => <strong key={name}>{name}</strong>)}</div>
+      </section>
+
+      <section className="how-grid" id="how">
+        {[
+          [ScanSearch, "Detect Issues", "AI analyzes contracts, invoices and actual usage across all vendors."],
+          [Zap, "Recover Faster", "We generate the evidence and help recover what you’re owed."],
+          [ShieldCheck, "Prevent Waste", "Monitor continuously and stop overcharges before they happen."],
+          [BarChart3, "Optimize Spend", "Turn recovery into long-term savings and stronger vendor terms."],
+        ].map(([Icon, title, description]) => (
+          <article key={title as string}><Icon size={31}/><h3>{title as string}</h3><p>{description as string}</p></article>
+        ))}
+      </section>
+
+      <section className="platform-preview-section" id="platform">
+        <div className="section-intro"><span className="eyebrow">The command center</span><h2>Every dollar, under control.</h2><p>A complete view of spend monitored, recovery opportunities, realized value, and future waste prevented.</p></div>
+        <div className="browser-frame">
+          <div className="browser-top"><i/><i/><i/><span>app.recovra.com/dashboard · sample workspace</span></div>
+          <div className="preview-app">
+            <aside><Brand/><nav><strong><BarChart3 size={13}/> Command Center</strong><span><ShieldCheck size={13}/> Opportunities</span><span><FileSearch2 size={13}/> Invoices</span><span><CreditCard size={13}/> Contracts</span><span><Boxes size={13}/> Vendors</span><span><Bot size={13}/> Industry Modules</span></nav></aside>
+            <section>
+              <header><div><small>Welcome back, John.</small><h3>Command Center</h3></div><button>Upload documents</button></header>
+              <div className="preview-metrics">{[["Spend monitored","$18,420,319"],["Recovery opportunities","$746,210"],["Recovered","$481,904"],["Prevented","$182,640"]].map(([label,value])=><div key={label}><small>{label}</small><strong>{value}</strong><span>↑ sample trend</span></div>)}</div>
+              <div className="preview-grid"><article><strong>Recovery trend</strong><div className="preview-chart"><svg viewBox="0 0 500 150" preserveAspectRatio="none"><path d="M0 130 L55 101 L110 111 L165 82 L220 91 L275 58 L330 69 L385 35 L440 49 L500 15 L500 150 L0 150 Z"/><polyline points="0,130 55,101 110,111 165,82 220,91 275,58 330,69 385,35 440,49 500,15"/></svg></div></article><article><strong>Top opportunities</strong>{categoryRecoveries.slice(0,4).map(([name,value])=><p key={name}><span>{name}</span><b>{value}</b></p>)}</article></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section className="industry-section" id="industries">
+        <div className="section-intro row"><div><span className="eyebrow">Built for every industry</span><h2>One platform. Every dollar.</h2><p>The same recovery engine adapts to the documents, usage, and rules that define each spend category.</p></div><Link href="/modules">Explore all industries <ArrowRight size={16}/></Link></div>
+        <div className="industry-card-grid">{industries.map(([Icon,name,description])=><article key={name as string}><Icon size={24}/><strong>{name as string}</strong><small>{description as string}</small></article>)}</div>
+      </section>
+
+      <section className="enterprise-cta" id="customers">
+        <div className="cta-quote"><Sparkles size={22}/><blockquote>“The strongest recovery programs connect every finding to proof, ownership, and a measurable outcome.”</blockquote><span>Illustrative customer outcome · not a customer testimonial</span></div>
+        <div><span className="eyebrow">Turn expenses into opportunities</span><h2>Stop leaving money<br/>on the table.</h2><p>Join the companies using Recovra’s operating model to recover more, control spend, and build a stronger bottom line.</p><div className="hero-actions"><Link className="primary-cta" href="/dashboard">Get Started <ArrowRight size={16}/></Link><Link className="ghost-cta" href="/dashboard">Talk to Sales</Link></div></div>
+      </section>
+
+      <footer id="resources"><Brand/><p>Find overcharges. Recover savings. Control spend.</p><span>© 2026 Recovra · Demo platform</span></footer>
+    </main>
+  );
 }

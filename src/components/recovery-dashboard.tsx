@@ -1,65 +1,139 @@
 "use client";
-import { useMemo, useState } from "react";
+
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, ChevronRight, CircleDollarSign, FileSearch2, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
-import { headline, opportunities, activity, trend } from "@/lib/demo-data";
-import { modules } from "@/lib/modules";
+import { useState } from "react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  ChevronRight,
+  FileCheck2,
+  FileText,
+  ShieldAlert,
+  Sparkles,
+  TrendingUp,
+  UploadCloud,
+} from "lucide-react";
+import { activity, dashboardMetrics, money, opportunities } from "@/lib/platform-data";
 import { MetricCard } from "./metric-card";
+import { StatusBadge } from "./ui/status-badge";
 
-const money=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n);
+export function RecoveryDashboard() {
+  const [range, setRange] = useState("30D");
+  const scale = range === "7D" ? 0.28 : range === "90D" ? 1.7 : range === "YTD" ? 3.2 : 1;
 
-export function RecoveryDashboard(){
-  const [range,setRange]=useState("30D");
-  const scale = range==="7D"?.28:range==="90D"?1.7:range==="YTD"?3.2:1;
-  const topModules=useMemo(()=>[...modules].filter(m=>m.found>0).sort((a,b)=>b.found-a.found).slice(0,6),[]);
-  return <>
-    <section className="page-heading">
-      <div><span className="eyebrow"><Sparkles size={14}/> Recovery Intelligence</span><h1>Your money, reconciled.</h1><p>One view of leakage found, money recovered, and waste stopped before payment.</p></div>
-      <div className="range-tabs">{["7D","30D","90D","YTD"].map(x=><button className={range===x?"selected":""} onClick={()=>setRange(x)} key={x}>{x}</button>)}</div>
-    </section>
+  return (
+    <>
+      <section className="page-heading">
+        <div>
+          <span className="eyebrow"><Sparkles size={14}/> Recovery Intelligence</span>
+          <h1>Command Center</h1>
+          <p>Monitor leakage, validate recoveries, and stop recurring spend across every active module.</p>
+        </div>
+        <div className="heading-controls">
+          <div className="range-tabs">
+            {["7D", "30D", "90D", "YTD"].map((item) => (
+              <button className={range === item ? "selected" : ""} onClick={() => setRange(item)} key={item}>{item}</button>
+            ))}
+          </div>
+          <Link className="primary-button" href="/documents"><UploadCloud size={15}/> Upload documents</Link>
+        </div>
+      </section>
 
-    <section className="metrics-grid">
-      <MetricCard label="Spend monitored" value={headline.monitored*scale} delta={12} note="Across 18 recovery modules"/>
-      <MetricCard label="Opportunity found" value={headline.found*scale} delta={18} tone="warn" note="Estimated + verified"/>
-      <MetricCard label="Recovered" value={headline.recovered*scale} delta={24} tone="good" note="Approved & realized value"/>
-      <MetricCard label="Prevented" value={headline.prevented*scale} delta={31} tone="good" note="Future spend stopped"/>
-    </section>
+      <section className="metrics-grid">
+        <MetricCard label="Total spend monitored" value={dashboardMetrics.monitored * scale} delta={12} note="Across 8 active modules"/>
+        <MetricCard label="Recovery opportunities" value={dashboardMetrics.found * scale} delta={18} tone="warn" note="Estimated + verified"/>
+        <MetricCard label="Recovered" value={dashboardMetrics.recovered * scale} delta={23} tone="good" note="Approved & realized only"/>
+        <MetricCard label="Prevented" value={dashboardMetrics.prevented * scale} delta={31} tone="good" note="Future spend stopped"/>
+      </section>
 
-    <section className="dashboard-grid">
-      <article className="panel recovery-pulse">
-        <div className="panel-head"><div><span className="panel-kicker">Recovery pulse</span><h2>{money((headline.recovered+headline.prevented)*scale)}</h2><p>Total value protected</p></div><span className="chip good"><TrendingUp size={14}/> +27.4%</span></div>
-        <div className="spark-bars" aria-label="Demo recovery trend">{trend.map((n,i)=><span key={i} style={{height:`${Math.max(16,n/1.25)}%`}} title={`period ${i+1}`}/>)}</div>
-        <div className="pulse-legend"><span><i className="dot recovered"/>Recovered</span><span><i className="dot pending"/>Verified pending</span><span><i className="dot prevented"/>Prevented</span></div>
-      </article>
+      <section className="command-grid">
+        <article className="panel trend-panel">
+          <div className="panel-title-row">
+            <div><span className="panel-kicker">Recovery trend</span><h3>Value protected over time</h3></div>
+            <span className="chip good"><TrendingUp size={14}/> +27.4%</span>
+          </div>
+          <div className="chart-legend"><span><i className="dot recovered"/>Identified</span><span><i className="dot prevented"/>Recovered</span><span><i className="dot pending"/>Prevented</span></div>
+          <div className="area-chart" aria-label="Sample monthly recovery trend">
+            <div className="chart-gridlines"><i/><i/><i/><i/></div>
+            <svg viewBox="0 0 720 230" preserveAspectRatio="none" role="img">
+              <title>Sample recovery value increases throughout the year</title>
+              <defs>
+                <linearGradient id="recovery-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#79e2a7" stopOpacity=".55"/><stop offset="100%" stopColor="#79e2a7" stopOpacity=".03"/></linearGradient>
+              </defs>
+              <path className="area-fill" d="M0 194 L65 166 L130 176 L196 138 L261 148 L327 112 L392 120 L458 82 L523 94 L589 61 L654 72 L720 31 L720 230 L0 230 Z"/>
+              <polyline points="0,194 65,166 130,176 196,138 261,148 327,112 392,120 458,82 523,94 589,61 654,72 720,31"/>
+              <polyline className="secondary-line" points="0,214 65,205 130,202 196,184 261,178 327,161 392,151 458,139 523,120 589,108 654,94 720,76"/>
+            </svg>
+            <div className="chart-months">{["Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"].map((month) => <span key={month}>{month}</span>)}</div>
+          </div>
+        </article>
 
-      <article className="panel recovery-funnel">
-        <div className="panel-title-row"><div><span className="panel-kicker">Recovery pipeline</span><h3>From signal to cash</h3></div><Link href="/recoveries">Open pipeline <ArrowRight size={15}/></Link></div>
-        <div className="funnel-row"><span><FileSearch2 size={17}/> Found</span><strong>{money(headline.found*scale)}</strong></div>
-        <div className="funnel-line"><i style={{width:"82%"}}/></div>
-        <div className="funnel-row"><span><ShieldCheck size={17}/> Verified</span><strong>{money(headline.verified*scale)}</strong></div>
-        <div className="funnel-line"><i style={{width:"65%"}}/></div>
-        <div className="funnel-row"><span><CircleDollarSign size={17}/> Recovered</span><strong>{money(headline.recovered*scale)}</strong></div>
-        <div className="funnel-line"><i style={{width:"54%"}}/></div>
-        <p className="funnel-note"><CheckCircle2 size={15}/> 64.6% of identified value has been realized.</p>
-      </article>
-    </section>
+        <article className="panel top-opportunities">
+          <div className="panel-title-row">
+            <div><span className="panel-kicker">Priority queue</span><h3>Top recovery opportunities</h3></div>
+            <Link href="/opportunities">View all <ArrowRight size={15}/></Link>
+          </div>
+          <div className="opportunity-stack">
+            {opportunities.slice(0, 5).map((row) => (
+              <Link href={`/opportunities/${row.id}`} key={row.id}>
+                <span className="vendor-monogram">{row.vendor.slice(0, 2).toUpperCase()}</span>
+                <div><strong>{row.vendor}</strong><small>{row.issue}</small></div>
+                <div className="stack-value"><strong>{money(row.potentialRecovery)}</strong><small>{row.confidence}% confidence</small></div>
+              </Link>
+            ))}
+          </div>
+        </article>
+      </section>
 
-    <section className="panel opportunities-panel">
-      <div className="panel-title-row"><div><span className="panel-kicker">Priority queue</span><h3>Highest-value opportunities</h3></div><button className="text-button">View all <ChevronRight size={15}/></button></div>
-      <div className="table-wrap"><table><thead><tr><th>Vendor</th><th>Module</th><th>Finding</th><th>Confidence</th><th>Status</th><th>Value</th></tr></thead><tbody>
-        {opportunities.map(row=><tr key={row.vendor+row.issue}><td><strong>{row.vendor}</strong></td><td><span className="module-pill">{row.module}</span></td><td>{row.issue}</td><td><div className="confidence"><span><i style={{width:`${row.confidence}%`}}/></span>{row.confidence}%</div></td><td><span className="status-pill">{row.status}</span></td><td className="money-good">{money(row.amount)}</td></tr>)}
-      </tbody></table></div>
-    </section>
+      <section className="panel opportunities-panel command-opportunities">
+        <div className="panel-title-row">
+          <div><span className="panel-kicker">High-priority findings</span><h3>Act before value slips away</h3></div>
+          <Link href="/opportunities">Open work queue <ChevronRight size={15}/></Link>
+        </div>
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Vendor</th><th>Module</th><th>Finding</th><th>Confidence</th><th>Status</th><th>Value</th></tr></thead>
+            <tbody>
+              {opportunities.slice(0, 5).map((row) => (
+                <tr key={row.id}>
+                  <td><Link href={`/opportunities/${row.id}`}><strong>{row.vendor}</strong><small className="cell-sub">{row.id}</small></Link></td>
+                  <td><span className="module-pill">{row.module}</span></td>
+                  <td>{row.issue}</td>
+                  <td><div className="confidence"><span><i style={{width: `${row.confidence}%`}}/></span>{row.confidence}%</div></td>
+                  <td><StatusBadge>{row.status}</StatusBadge></td>
+                  <td className="money-good">{money(row.potentialRecovery)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-    <section className="dashboard-grid lower">
-      <article className="panel">
-        <div className="panel-title-row"><div><span className="panel-kicker">Coverage</span><h3>Recovery modules</h3></div><Link href="/modules">All modules <ArrowRight size={15}/></Link></div>
-        <div className="module-mini-grid">{topModules.map(({slug,name,icon:Icon,found,status})=><Link href="/modules" key={slug} className="module-mini"><span className="mini-icon"><Icon size={17}/></span><div><strong>{name}</strong><small>{money(found)} found</small></div><span className={`tiny-status ${status}`}>{status}</span></Link>)}</div>
-      </article>
-      <article className="panel">
-        <div className="panel-title-row"><div><span className="panel-kicker">Live ledger</span><h3>Recent activity</h3></div><span className="live-badge"><i/> Streaming</span></div>
-        <div className="activity-list">{activity.map(([value,action,source,time])=><div className="activity-item" key={value+action}><span className="activity-icon"><CheckCircle2 size={16}/></span><div><strong>{value} {action}</strong><small>{source}</small></div><time>{time}</time></div>)}</div>
-      </article>
-    </section>
-  </>;
+      <section className="command-lower-grid">
+        <article className="panel">
+          <div className="panel-title-row"><div><span className="panel-kicker">Pending actions</span><h3>Needs your attention</h3></div><span className="count-badge">7 open</span></div>
+          <div className="action-list">
+            <Link href="/opportunities/RCV-2481"><ShieldAlert size={17}/><div><strong>Approve parcel evidence package</strong><small>NorthStar Parcel · $24,180 potential recovery</small></div><ChevronRight size={15}/></Link>
+            <Link href="/contracts"><AlertTriangle size={17}/><div><strong>Review upcoming SaaS renewal</strong><small>DataDesk · renews in 18 days</small></div><ChevronRight size={15}/></Link>
+            <Link href="/documents"><FileCheck2 size={17}/><div><strong>Confirm extracted contract clause</strong><small>Nimbus Cloud · Schedule B</small></div><ChevronRight size={15}/></Link>
+          </div>
+        </article>
+        <article className="panel">
+          <div className="panel-title-row"><div><span className="panel-kicker">Activity ledger</span><h3>Recent activity</h3></div><span className="sample-label">Sample data</span></div>
+          <div className="activity-list">{activity.map(([value, source, time]) => <div className="activity-item" key={value}><span className="activity-icon"><CheckCircle2 size={16}/></span><div><strong>{value}</strong><small>{source}</small></div><time>{time}</time></div>)}</div>
+        </article>
+        <article className="panel">
+          <div className="panel-title-row"><div><span className="panel-kicker">Recently processed</span><h3>Documents</h3></div><Link href="/documents">Document center <ArrowRight size={15}/></Link></div>
+          <div className="recent-docs">
+            {[
+              ["NSP_Invoice_884103.pdf","Invoice · 18 pages","Complete"],
+              ["Parcel_Rate_Card_2026.xlsx","Rate sheet · 1,204 rows","Complete"],
+              ["Cloud_Commitment_Order.pdf","Contract · 12 pages","Needs Review"],
+            ].map(([name, meta, status]) => <Link href="/documents" key={name}><span><FileText size={16}/></span><div><strong>{name}</strong><small>{meta}</small></div><StatusBadge>{status}</StatusBadge></Link>)}
+          </div>
+        </article>
+      </section>
+    </>
+  );
 }
