@@ -11,7 +11,7 @@ create table if not exists public.organizations (
 create table if not exists public.organization_members (
   organization_id uuid not null references public.organizations(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
-  role text not null check (role in ('owner','admin','analyst','reviewer','viewer')),
+  role text not null check (role in ('owner','admin','finance','analyst','operations','reviewer','viewer')),
   created_at timestamptz not null default now(),
   primary key (organization_id, user_id)
 );
@@ -23,6 +23,31 @@ create table if not exists public.vendors (
   category text,
   external_id text,
   created_at timestamptz not null default now()
+);
+
+create table if not exists public.integrations (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  provider text not null,
+  category text not null,
+  status text not null default 'requires_setup',
+  external_account_id text,
+  config jsonb not null default '{}'::jsonb,
+  sync_cursor text,
+  last_synced_at timestamptz,
+  created_at timestamptz not null default now(),
+  unique (organization_id, provider, external_account_id)
+);
+
+create table if not exists public.module_configs (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  module text not null,
+  status text not null default 'inactive',
+  config jsonb not null default '{}'::jsonb,
+  activated_at timestamptz,
+  created_at timestamptz not null default now(),
+  unique (organization_id, module)
 );
 
 create table if not exists public.documents (
@@ -149,6 +174,20 @@ create table if not exists public.findings (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.finding_evidence (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  finding_id uuid not null references public.findings(id) on delete cascade,
+  document_id uuid references public.documents(id) on delete restrict,
+  operational_event_id uuid references public.operational_events(id) on delete restrict,
+  evidence_type text not null,
+  source_locator jsonb not null default '{}'::jsonb,
+  content_hash text,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  check (document_id is not null or operational_event_id is not null)
+);
+
 create table if not exists public.recoveries (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -161,6 +200,28 @@ create table if not exists public.recoveries (
   owner_user_id uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+create table if not exists public.recovery_events (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  recovery_id uuid not null references public.recoveries(id) on delete cascade,
+  event_type text not null,
+  actor_user_id uuid references auth.users(id) on delete set null,
+  details jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.approvals (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  recovery_id uuid not null references public.recoveries(id) on delete cascade,
+  requested_by uuid references auth.users(id) on delete set null,
+  decided_by uuid references auth.users(id) on delete set null,
+  status text not null default 'pending' check (status in ('pending','approved','rejected','cancelled')),
+  decision_note text,
+  requested_at timestamptz not null default now(),
+  decided_at timestamptz
 );
 
 create table if not exists public.savings_ledger (
@@ -185,10 +246,25 @@ create table if not exists public.audit_logs (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  kind text not null,
+  title text not null,
+  body text,
+  entity_type text,
+  entity_id text,
+  read_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
 -- RLS
 alter table public.organizations enable row level security;
 alter table public.organization_members enable row level security;
 alter table public.vendors enable row level security;
+alter table public.integrations enable row level security;
+alter table public.module_configs enable row level security;
 alter table public.documents enable row level security;
 alter table public.contracts enable row level security;
 alter table public.contract_terms enable row level security;
@@ -197,9 +273,13 @@ alter table public.invoice_lines enable row level security;
 alter table public.operational_events enable row level security;
 alter table public.audit_runs enable row level security;
 alter table public.findings enable row level security;
+alter table public.finding_evidence enable row level security;
 alter table public.recoveries enable row level security;
+alter table public.recovery_events enable row level security;
+alter table public.approvals enable row level security;
 alter table public.savings_ledger enable row level security;
 alter table public.audit_logs enable row level security;
+alter table public.notifications enable row level security;
 
 create policy "members can read own membership"
 on public.organization_members for select to authenticated
@@ -215,6 +295,10 @@ using (exists (
 -- Reusable pattern expanded explicitly so every exposed table remains tenant-scoped.
 create policy "org members read vendors" on public.vendors for select to authenticated
 using (exists (select 1 from public.organization_members m where m.organization_id = vendors.organization_id and m.user_id = (select auth.uid())));
+create policy "org members read integrations" on public.integrations for select to authenticated
+using (exists (select 1 from public.organization_members m where m.organization_id = integrations.organization_id and m.user_id = (select auth.uid())));
+create policy "org members read module configs" on public.module_configs for select to authenticated
+using (exists (select 1 from public.organization_members m where m.organization_id = module_configs.organization_id and m.user_id = (select auth.uid())));
 create policy "org members read documents" on public.documents for select to authenticated
 using (exists (select 1 from public.organization_members m where m.organization_id = documents.organization_id and m.user_id = (select auth.uid())));
 create policy "org members read contracts" on public.contracts for select to authenticated
@@ -231,12 +315,23 @@ create policy "org members read audit runs" on public.audit_runs for select to a
 using (exists (select 1 from public.organization_members m where m.organization_id = audit_runs.organization_id and m.user_id = (select auth.uid())));
 create policy "org members read findings" on public.findings for select to authenticated
 using (exists (select 1 from public.organization_members m where m.organization_id = findings.organization_id and m.user_id = (select auth.uid())));
+create policy "org members read finding evidence" on public.finding_evidence for select to authenticated
+using (exists (select 1 from public.organization_members m where m.organization_id = finding_evidence.organization_id and m.user_id = (select auth.uid())));
 create policy "org members read recoveries" on public.recoveries for select to authenticated
 using (exists (select 1 from public.organization_members m where m.organization_id = recoveries.organization_id and m.user_id = (select auth.uid())));
+create policy "org members read recovery events" on public.recovery_events for select to authenticated
+using (exists (select 1 from public.organization_members m where m.organization_id = recovery_events.organization_id and m.user_id = (select auth.uid())));
+create policy "org members read approvals" on public.approvals for select to authenticated
+using (exists (select 1 from public.organization_members m where m.organization_id = approvals.organization_id and m.user_id = (select auth.uid())));
 create policy "org members read savings" on public.savings_ledger for select to authenticated
 using (exists (select 1 from public.organization_members m where m.organization_id = savings_ledger.organization_id and m.user_id = (select auth.uid())));
 create policy "org members read audit logs" on public.audit_logs for select to authenticated
 using (exists (select 1 from public.organization_members m where m.organization_id = audit_logs.organization_id and m.user_id = (select auth.uid())));
+create policy "users read own notifications" on public.notifications for select to authenticated
+using (
+  user_id = (select auth.uid())
+  and exists (select 1 from public.organization_members m where m.organization_id = notifications.organization_id and m.user_id = (select auth.uid()))
+);
 
 -- For MVP writes, route through authenticated server-side actions after verifying membership/role.
 -- Add granular INSERT/UPDATE/DELETE policies only for client-side operations you intentionally expose.
