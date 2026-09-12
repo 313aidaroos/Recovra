@@ -18,7 +18,6 @@ import {
   Search,
   Settings2,
   ShieldCheck,
-  UploadCloud,
   WalletCards,
   X,
 } from "lucide-react";

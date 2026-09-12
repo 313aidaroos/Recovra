@@ -1,5 +1,5 @@
 import {
-  Bot, Boxes, Building2, Cloud, Construction, CreditCard, Factory, HardHat,
+  Bot, Boxes, Building2, Cloud, CreditCard, Factory, HardHat,
   Hotel, Landmark, PackageCheck, RadioTower, Receipt, Server, ShoppingBag,
   Store, Truck, UtilityPole, Warehouse, type LucideIcon
 } from "lucide-react";

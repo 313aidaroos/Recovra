@@ -5,7 +5,6 @@ import {
   Bot,
   Boxes,
   Building2,
-  CheckCircle2,
   Cloud,
   Construction,
   CreditCard,
