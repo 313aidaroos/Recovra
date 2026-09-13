@@ -8,7 +8,7 @@ import { formatMoney } from "@/lib/format";
 
 const initial: UploadState = { status: "idle" };
 
-export function UploadForm({ currency, canUpload }: { currency: string; canUpload: boolean }) {
+export function UploadForm({ currency, canUpload, pdfExtraction }: { currency: string; canUpload: boolean; pdfExtraction: boolean }) {
   const [state, action, pending] = useActionState(uploadDocumentAction, initial);
   const [kind, setKind] = useState("invoice");
   const [fileName, setFileName] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export function UploadForm({ currency, canUpload }: { currency: string; canUploa
         <form action={action} className="workflow-form">
           <label className="field-label">Document type
             <select name="kind" value={kind} onChange={(event) => setKind(event.target.value)}>
-              <option value="invoice">Invoice (CSV/XLSX audited immediately)</option>
+              <option value="invoice">{pdfExtraction ? "Invoice (CSV/XLSX/PDF audited on upload)" : "Invoice (CSV/XLSX audited immediately)"}</option>
               <option value="rate_sheet">Rate sheet / contract terms (CSV/XLSX)</option>
               <option value="contract">Contract document (PDF, stored for review)</option>
               <option value="operational">Operational data (tracking, POD, dwell)</option>

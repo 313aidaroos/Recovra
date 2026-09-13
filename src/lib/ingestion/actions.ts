@@ -5,9 +5,10 @@ import { auditInvoice, type AuditSummary } from "@/lib/audit/run-audit";
 import { requireLiveWorkspace, WorkspaceAccessError, writeAuditLog, type LiveWorkspace } from "@/lib/auth/workspace";
 import { ensureVendor } from "@/lib/db/vendors";
 import type { DocumentRow } from "@/lib/db/types";
-import { termKey } from "@/lib/recovery-engine";
+import { compareDecimal, normalizeDecimalInput, sumDecimals, termKey } from "@/lib/recovery-engine";
 import { WRITER_ROLES } from "@/types/workspace";
 import { parseInvoiceTables, type ParsedInvoice } from "./invoice-parser";
+import { extractInvoiceTablesFromPdf, getExtractionConfig, isPdfFile } from "./pdf-extractor";
 import { parseRateSheetTables, type ParsedRateSheet } from "./rate-sheet-parser";
 import { isSpreadsheetFile, parseTabularFile } from "./tabular";
 
@@ -116,13 +117,44 @@ export async function uploadDocumentAction(_previous: UploadState, formData: For
         }).eq("id", documentId);
         if (parsed.sheets.length === 0) result.note = "No rate rows could be read. Check the column headers against the template.";
       }
+    } else if (kind === "invoice" && isPdfFile(file.name, file.type) && getExtractionConfig()) {
+      const config = getExtractionConfig()!;
+      const extracted = await extractInvoiceTablesFromPdf(bytes, file.name, config);
+      // Record provenance before persisting invoices so the audit can read it and cap confidence.
+      await supabase.from("documents").update({ metadata: { size: file.size, mimeType: file.type, extraction: extracted.provenance } }).eq("id", documentId);
+      const parsed = parseInvoiceTables(extracted.tables, { vendorName: vendorName || undefined, currency: organization.currency, fallbackInvoiceNumber: file.name.replace(/\.[^.]+$/, "") });
+      result.warnings = [...extracted.warnings, ...parsed.warnings];
+      result.invoices = [];
+      for (const invoice of parsed.invoices) {
+        result.invoices.push(await persistInvoice(workspace, documentId, invoice));
+      }
+      const lineSum = sumDecimals(parsed.invoices.map((invoice) => invoice.total));
+      if (extracted.provenance.statedTotal && parsed.invoices.length > 0) {
+        const stated = normalizeDecimalInput(extracted.provenance.statedTotal);
+        if (stated && compareDecimal(stated, lineSum) !== 0) {
+          result.warnings.push(`Extracted lines sum to ${lineSum} but the PDF states a total of ${stated}. Compare the rows with the source before acting on any finding.`);
+        }
+      }
+      const findings = result.invoices.reduce((total, invoice) => total + invoice.audit.findings, 0);
+      await supabase.from("documents").update({
+        status: "needs_review",
+        vendor_id: result.invoices.length === 1 ? await vendorIdFor(workspace, result.invoices[0].vendor) : null,
+        metadata: { size: file.size, mimeType: file.type, rowsRead: parsed.rowsRead, invoices: parsed.invoices.length, findings, warnings: result.warnings.slice(0, 50), extraction: { ...extracted.provenance, lineSum } },
+      }).eq("id", documentId);
+      await writeAuditLog(workspace, "document.extracted", { type: "document", id: documentId }, { provider: config.provider, model: config.model, confidence: extracted.provenance.confidence, lines: extracted.provenance.extractedLines, invoices: parsed.invoices.length });
+      result.note = parsed.invoices.length === 0
+        ? "No billable lines could be read from this PDF. If it is a scanned image of poor quality, request a CSV/XLSX export from the vendor."
+        : `Rows were transcribed from the PDF by ${config.provider}/${config.model} (read confidence ${Math.round(Number(extracted.provenance.confidence) * 100)}%). Findings from this document are marked "needs review" and capped at that confidence until a person compares the rows with the source PDF.`;
     } else {
+      const pdfWithoutProvider = kind === "invoice" && isPdfFile(file.name, file.type);
       await supabase.from("documents").update({
         status: "stored",
         vendor_id: vendorName ? (await ensureVendor(workspace, vendorName)).id : null,
-        metadata: { size: file.size, mimeType: file.type, note: "Stored with provenance. Structured extraction for this file type requires the Document Agent (AI provider credentials)." },
+        metadata: { size: file.size, mimeType: file.type, note: pdfWithoutProvider ? "Stored with provenance. PDF extraction needs a server-side AI provider key (ANTHROPIC_API_KEY or OPENAI_API_KEY)." : "Stored with provenance. Structured extraction is available for CSV/XLSX files and PDF invoices." },
       }).eq("id", documentId);
-      result.note = "Stored securely with SHA-256 provenance. PDF and image extraction is queued for the Document Agent once an AI provider key is configured; CSV/XLSX files are audited immediately.";
+      result.note = pdfWithoutProvider
+        ? "Stored securely with SHA-256 provenance. PDF extraction is switched off because no AI provider key is configured on the server; upload the CSV/XLSX version to audit it now."
+        : "Stored securely with SHA-256 provenance. CSV/XLSX invoices and rate sheets, and PDF invoices, are audited automatically; other file types are kept as evidence.";
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Processing failed.";

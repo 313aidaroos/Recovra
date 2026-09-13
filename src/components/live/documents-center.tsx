@@ -17,10 +17,12 @@ function describeMetadata(document: DocumentListItem) {
   if (typeof metadata.findings === "number") parts.push(`${metadata.findings} finding${metadata.findings === 1 ? "" : "s"}`);
   if (typeof metadata.rowsRead === "number") parts.push(`${metadata.rowsRead} rows read`);
   if (typeof metadata.error === "string") parts.push(metadata.error);
+  const extraction = metadata.extraction as { provider?: string; confidence?: string } | undefined;
+  if (extraction?.provider) parts.push(`PDF transcribed by ${extraction.provider}${extraction.confidence ? ` · read confidence ${Math.round(Number(extraction.confidence) * 100)}%` : ""} · verify rows`);
   return parts.join(" · ") || "—";
 }
 
-export function DocumentsCenter({ documents, currency, canUpload, signedUrls }: { documents: DocumentListItem[]; currency: string; canUpload: boolean; signedUrls: Record<string, string | null> }) {
+export function DocumentsCenter({ documents, currency, canUpload, signedUrls, pdfExtraction }: { documents: DocumentListItem[]; currency: string; canUpload: boolean; signedUrls: Record<string, string | null>; pdfExtraction: boolean }) {
   const counts = {
     total: documents.length,
     processing: documents.filter((document) => document.status === "parsing" || document.status === "uploaded").length,
@@ -38,7 +40,7 @@ export function DocumentsCenter({ documents, currency, canUpload, signedUrls }: 
         <div><strong>{counts.processing}</strong><span>Processing</span></div>
       </section>
       <section className="ingest-grid">
-        <UploadForm currency={currency} canUpload={canUpload}/>
+        <UploadForm currency={currency} canUpload={canUpload} pdfExtraction={pdfExtraction}/>
         <article className="panel extraction-flow">
           <span className="panel-kicker">What happens on upload</span>
           <div className="pipeline-steps">
@@ -47,7 +49,9 @@ export function DocumentsCenter({ documents, currency, canUpload, signedUrls }: 
             <div><span><ShieldCheck size={16}/></span><div><strong>Audited against contract terms</strong><small>Rate, fuel percentage, free-time, unapproved accessorial and duplicate rules run with fixed-point math.</small></div><i/></div>
             <div><span><FileText size={16}/></span><div><strong>Findings open recovery cases</strong><small>Each finding is evidence-linked and waits for human review before any claim is prepared.</small></div><i/></div>
           </div>
-          <p>PDF contracts and scanned invoices are stored with provenance today; structured extraction for those formats activates when an AI provider key is configured for the Document Agent.</p>
+          {pdfExtraction
+            ? <p>PDF invoices are transcribed into rows by the Document Agent, then audited by the same deterministic rules. Those findings stay marked &ldquo;needs review&rdquo; and capped at the read confidence until someone compares the rows with the source PDF. PDF contracts are stored for review.</p>
+            : <p>PDF invoices are stored with provenance today. Automatic PDF transcription switches on when a server-side AI provider key (ANTHROPIC_API_KEY or OPENAI_API_KEY) is configured; CSV/XLSX files are always audited immediately.</p>}
         </article>
       </section>
       <section className="panel document-table">

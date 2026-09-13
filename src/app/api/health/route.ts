@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isPdfExtractionConfigured } from "@/lib/ingestion/pdf-extractor";
 import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
@@ -25,8 +26,10 @@ export async function GET() {
   }
 
   const healthy = Object.values(checks).every((check) => check.ok) || !isSupabaseConfigured();
+  // Informational only: PDF transcription is optional and never affects liveness.
+  const features = { pdfExtraction: isPdfExtractionConfigured() ? "configured" : "off" };
   return NextResponse.json(
-    { status: healthy ? "ok" : "degraded", mode: isSupabaseConfigured() ? "live" : "demo", checks, uptimeMs: Math.round(process.uptime() * 1000), durationMs: Date.now() - startedAt, timestamp: new Date().toISOString() },
+    { status: healthy ? "ok" : "degraded", mode: isSupabaseConfigured() ? "live" : "demo", checks, features, uptimeMs: Math.round(process.uptime() * 1000), durationMs: Date.now() - startedAt, timestamp: new Date().toISOString() },
     { status: healthy ? 200 : 503, headers: { "cache-control": "no-store" } },
   );
 }

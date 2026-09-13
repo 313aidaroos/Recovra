@@ -16,6 +16,7 @@ import {
   type PriorInvoice,
   type RuleFinding,
 } from "@/lib/recovery-engine";
+import { applySourceExtractionLimits, type SourceExtraction } from "./source-extraction";
 
 export type AuditSummary = {
   auditRunId: string;
@@ -42,6 +43,14 @@ function termFromRow(row: ContractTermRow, contract: ContractRow): ContractTerm 
       ? { documentId: locator.documentId, kind: "rate_sheet", locator: locator.locator ?? "row:?", label: locator.label ?? contract.title }
       : null,
   };
+}
+
+async function loadSourceExtraction(workspace: LiveWorkspace, invoice: InvoiceRow): Promise<SourceExtraction | null> {
+  if (!invoice.source_document_id) return null;
+  const { data } = await workspace.supabase.from("documents").select("metadata").eq("id", invoice.source_document_id).maybeSingle();
+  const extraction = (data as { metadata?: { extraction?: Partial<SourceExtraction> } } | null)?.metadata?.extraction;
+  if (!extraction || extraction.method !== "ai") return null;
+  return { method: "ai", provider: String(extraction.provider ?? "unknown"), model: String(extraction.model ?? "unknown"), confidence: String(extraction.confidence ?? "0.5"), extractedAt: String(extraction.extractedAt ?? "") };
 }
 
 /**
@@ -127,7 +136,8 @@ export async function auditInvoice(workspace: LiveWorkspace, invoiceId: string):
   if (runError || !runRow) throw new Error(`Could not create audit run: ${runError?.message ?? "unknown"}`);
   const auditRunId = (runRow as { id: string }).id;
 
-  const result = runRecoveryEngine(context, allRecoveryRules);
+  const engineResult = runRecoveryEngine(context, allRecoveryRules);
+  const result = { ...engineResult, findings: applySourceExtractionLimits(engineResult.findings, await loadSourceExtraction(workspace, invoice)) };
   await persistFindings(workspace, auditRunId, invoice, result.findings);
 
   const totalVariance = sumDecimals(result.findings.map((finding) => finding.variance));

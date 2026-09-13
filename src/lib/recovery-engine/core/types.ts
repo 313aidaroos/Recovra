@@ -92,6 +92,8 @@ export type CalculationTrace = {
   varianceAmount: string;
   ruleVersion: string;
   matchedTerm?: { termId: string; contractId: string; key: string };
+  /** Present when the invoice rows were transcribed from a PDF by a model rather than read from a spreadsheet. */
+  sourceExtraction?: { method: "ai"; provider: string; model: string; confidence: string; extractedAt: string; humanVerificationRequired: true; confidenceCapApplied: boolean };
 };
 
 export type Severity = "low" | "medium" | "high" | "critical";
