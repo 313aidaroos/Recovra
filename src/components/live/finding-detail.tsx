@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, Bot, Calculator, CheckCircle2, Clock3, FileCheck2, FileText, ShieldCheck } from "lucide-react";
+import { ArrowRight, Bot, Calculator, CheckCircle2, Clock3, FileCheck2, FileText, LockKeyhole, Printer, ScanLine, ShieldCheck } from "lucide-react";
 import type { FindingDetail as FindingDetailData } from "@/lib/db/findings";
 import { formatDate, formatDateTime, formatMoney, formatPercent, titleCase } from "@/lib/format";
 import { availableActions, RECOVERY_STATUS_LABELS, RECOVERY_TRANSITIONS, type RecoveryAction } from "@/lib/recovery/workflow";
 import type { OrganizationRole } from "@/types/workspace";
 import { StatusBadge } from "../ui/status-badge";
+import { CLAIM_READY_STATUSES } from "./claim-packet";
 import { RecoveryActionPanel } from "./recovery-action-panel";
 
 type Trace = {
@@ -15,6 +16,7 @@ type Trace = {
   varianceAmount?: string;
   ruleVersion?: string;
   matchedTerm?: { termId: string; contractId: string; key: string };
+  sourceExtraction?: { provider: string; model: string; confidence: string; confidenceCapApplied: boolean };
 };
 
 export function FindingDetail({ data, role, documentLinks }: { data: FindingDetailData; role: OrganizationRole; documentLinks: Record<string, string | null> }) {
@@ -55,6 +57,9 @@ export function FindingDetail({ data, role, documentLinks }: { data: FindingDeta
               <div className="variance"><small>Variance detected</small><strong>{formatMoney(finding.variance_amount, finding.currency, { cents: true })}</strong></div>
             </div>
             <div className="rule-trace"><Calculator size={17}/><div><strong>Rule: {trace.ruleVersion ?? finding.rule_version}</strong><small>{trace.formula}</small>{trace.operands && <small className="operands">{Object.entries(trace.operands).map(([key, value]) => `${key} = ${value}`).join(" · ")}</small>}</div><StatusBadge tone="good">Traced</StatusBadge></div>
+            {trace.sourceExtraction && (
+              <div className="extraction-notice"><ScanLine size={16}/><div><strong>Rows transcribed from a PDF by {trace.sourceExtraction.provider}/{trace.sourceExtraction.model}</strong><small>Read confidence {Math.round(Number(trace.sourceExtraction.confidence) * 100)}%. The arithmetic above is deterministic, but the inputs came from a model reading the page. Open the source document below and confirm the billed line before approving a claim.</small></div></div>
+            )}
           </article>
 
           <article className="panel">
@@ -109,6 +114,9 @@ export function FindingDetail({ data, role, documentLinks }: { data: FindingDeta
             <p>We identified a {formatMoney(finding.variance_amount, finding.currency, { cents: true })} discrepancy on {vendorName} invoice {invoice?.invoice_number ?? ""}: {finding.description} The attached package includes the source rows, the contracted term and the calculation trace ({trace.ruleVersion ?? finding.rule_version}).</p>
             {recovery?.approved_amount && <p><strong>Approved amount:</strong> {formatMoney(recovery.approved_amount, finding.currency, { cents: true })}</p>}
             {recovery?.realized_amount && <p><strong>Recovered:</strong> {formatMoney(recovery.realized_amount, finding.currency, { cents: true })}</p>}
+            {CLAIM_READY_STATUSES.has(status)
+              ? <Link className="secondary-button tall claim-link" href={`/claims/${finding.id}`}><Printer size={15}/> Open claim packet</Link>
+              : <p className="muted-note"><LockKeyhole size={13}/> The printable claim packet unlocks once an approver authorises the amount.</p>}
           </article>
 
           <article className="panel timeline">
