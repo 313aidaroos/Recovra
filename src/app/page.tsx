@@ -115,7 +115,7 @@ export default function Home() {
         <div><span className="eyebrow">Turn expenses into opportunities</span><h2>Stop leaving money<br/>on the table.</h2><p>Join the companies using Recovra’s operating model to recover more, control spend, and build a stronger bottom line.</p><div className="hero-actions"><Link className="primary-cta" href="/signup">Get Started <ArrowRight size={16}/></Link><Link className="ghost-cta" href="/dashboard">Talk to Sales</Link></div></div>
       </section>
 
-      <footer id="resources"><Brand/><p>Find overcharges. Recover savings. Control spend.</p><span>© 2026 Recovra · Demo platform</span></footer>
+      <footer id="resources"><Brand/><p>Find overcharges. Recover savings. Control spend.</p><nav><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/pricing">Pricing</Link><Link href="/login">Sign in</Link></nav><span>© 2026 Recovra</span></footer>
     </main>
   );
 }

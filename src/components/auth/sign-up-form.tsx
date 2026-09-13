@@ -19,6 +19,7 @@ export function SignUpForm() {
         <label>Password<input name="password" type="password" autoComplete="new-password" minLength={10} required placeholder="At least 10 characters"/></label>
         <FormStatus state={state}/>
         <button className="primary-button wide" type="submit" disabled={pending}><UserPlus size={15}/> {pending ? "Creating account…" : "Create account"}</button>
+        <p className="muted-note">By creating an account you agree to the <Link className="text-link" href="/terms">Terms of Service</Link> and <Link className="text-link" href="/privacy">Privacy Policy</Link>.</p>
       </form>
       <p className="auth-switch">Already have an account? <Link href="/login">Sign in</Link></p>
     </>
