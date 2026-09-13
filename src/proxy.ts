@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { refreshSession } from "@/lib/supabase/proxy";
 
-const AUTH_ONLY_PATHS = ["/onboarding"];
+const AUTH_ONLY_PATHS = ["/onboarding", "/claims"];
 const GUEST_ONLY_PATHS = ["/login", "/signup"];
 
 export async function proxy(request: NextRequest) {
