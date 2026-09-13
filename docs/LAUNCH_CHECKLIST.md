@@ -1,47 +1,59 @@
-# Launch Checklist
+# Recovra launch checklist
 
-## Demo / marketing launch
+Everything below that is marked **you** needs a dashboard login the agent does not have. Items are
+ordered by impact. Each one links to the exact screen.
 
-The current application is ready to deploy as a polished, clearly labeled demo. It does not require environment variables because all visible records are sample data.
+## A. Go live (blocking)
 
-1. Review and merge the open pull request.
-2. In Vercel, import the GitHub repository and select Next.js.
-3. Use the repository root, Node.js 22, and the default build command (`npm run build`).
-4. Deploy a preview and verify `/`, `/dashboard`, `/opportunities/RCV-2481`, `/documents`, `/integrations`, and `/pricing`.
-5. Connect the production domain and verify DNS/SSL.
-6. Add Vercel Web Analytics and an error-monitoring provider before sharing broadly.
-7. Replace placeholder sales links with the real scheduling/contact destination.
-8. Confirm legal pages, privacy policy, terms, and support contact before collecting leads.
+1. **Merge the release PR** — https://github.com/313aidaroos/Recovra/pull/2
+   Vercel deploys `main` to https://recovra-three.vercel.app automatically. No environment
+   variables are required.
+2. **Sign in and rotate the bootstrap password** — https://recovra-three.vercel.app/login
+   Then Settings → Security → *Change password*. Create your organization on the onboarding screen.
+3. **Supabase Auth URLs (you)** — https://supabase.com/dashboard/project/ewvgpfufzeyzyutjxuoh/auth/url-configuration
+   - Site URL: `https://recovra-three.vercel.app`
+   - Redirect URLs: `https://recovra-three.vercel.app/auth/callback`, `https://*.vercel.app/auth/callback`
+   Without this, confirmation / magic-link emails for *new* signups point at localhost.
 
-## Do not accept customer financial documents yet
+## B. Before a paying customer sees it
 
-The current upload interaction is a local demo and does not persist files. Before processing real customer data:
+4. **Email (you)** — https://supabase.com/dashboard/project/ewvgpfufzeyzyutjxuoh/auth/smtp
+   Add SMTP (Resend, Postmark, SES) *or* turn off "Confirm email" at
+   https://supabase.com/dashboard/project/ewvgpfufzeyzyutjxuoh/auth/providers → Email.
+5. **Custom domain (you)** — Vercel → Project → Settings → Domains
+   (https://vercel.com/dashboard → *recovra* → Settings → Domains). Add e.g. `app.recovra.com`,
+   create the CNAME it shows at your DNS provider, then update the Supabase Site URL (step 3).
+   `*.vercel.app` hosts are served with `noindex`.
+6. **PDF invoice transcription (you)** — Vercel → Project → Settings → Environment Variables
+   Add `ANTHROPIC_API_KEY` (https://console.anthropic.com/settings/keys) or `OPENAI_API_KEY`
+   (https://platform.openai.com/api-keys) for **Production**, redeploy, then confirm
+   `https://recovra-three.vercel.app/api/health` shows `"pdfExtraction":"configured"`.
+7. **Legal entity details (you, 2 minutes)** — edit `src/lib/legal.ts` or set
+   `NEXT_PUBLIC_LEGAL_ENTITY`, `NEXT_PUBLIC_GOVERNING_LAW`, `NEXT_PUBLIC_LEGAL_EMAIL`,
+   `NEXT_PUBLIC_LEGAL_ADDRESS` in Vercel. Pages: `/terms`, `/privacy`. Have counsel review
+   before signing enterprise customers.
+8. **Uptime monitor (you)** — point Better Stack (https://betterstack.com/uptime), Checkly or
+   UptimeRobot at `https://recovra-three.vercel.app/api/health`, expect HTTP 200 and body
+   containing `"status":"ok"`, 1-minute interval.
+9. **Backups (you, optional)** — Supabase Pro already keeps 7 daily backups. For point-in-time
+   recovery: https://supabase.com/dashboard/project/ewvgpfufzeyzyutjxuoh/database/backups → PITR.
 
-- provision separate Supabase development and production projects
-- convert `supabase/schema.sql` into reviewed migrations
-- test RLS with at least two organizations and every role
-- implement authentication, organization onboarding, and invite flows
-- create private Storage buckets with signed URLs and malware scanning
-- implement server-side, organization-scoped repositories and write authorization
-- add a durable queue for extraction and reconciliation jobs
-- configure secrets only in the deployment secret manager
-- implement retention/deletion, audit-log, backup, and incident-response procedures
-- complete privacy, DPA, vendor inventory, and security review
-- add approval transactions before any claim submission
+## C. After launch
 
-## Connector launch
+10. Carrier / TMS / ERP connectors (need customer credentials; upload is the path until then).
+11. Invitation emails for teammates (depends on step 4). Today: teammates sign up, then an admin
+    adds them in Settings → Members.
+12. Stripe billing if you want self-serve plans instead of invoicing pilots.
+13. Vercel WAF / rate limits once the domain is public: Vercel → Project → Firewall.
 
-Every integration except the sample NorthStar connector is a readiness placeholder. Each real connector needs:
+## Connector launch (per integration, still applies)
 
-- provider credentials and OAuth application setup
-- least-privilege scope review
-- encrypted server-side secret storage
-- sync cursors, retries, idempotency, and disconnect/revoke behavior
-- source-object provenance and tenant-isolation tests
+Every integration except the sample NorthStar connector is a readiness placeholder. Each real
+connector needs provider credentials / OAuth app setup, least-privilege scope review, encrypted
+server-side secret storage, sync cursors + retries + idempotency + disconnect/revoke behaviour,
+and source-object provenance with tenant-isolation tests.
 
-## Final production gate
-
-Run:
+## Release gate (run before every merge)
 
 ```bash
 npm ci
@@ -51,4 +63,14 @@ npm run typecheck
 npm run build
 ```
 
-Then perform desktop and mobile smoke tests against the deployed URL.
+Then smoke-test the deployed URL on desktop and mobile, and run `supabase/tests/tenant_isolation.sql`
+after any migration that touches policies.
+
+## What is already done
+
+- Supabase auth, organizations, roles, RLS tenant isolation (tested), private document storage.
+- CSV/XLSX invoice + rate-sheet ingestion, deterministic audit rules, evidence-linked findings.
+- PDF invoice transcription path (activates with a provider key), confidence-capped and flagged.
+- Human-approved recovery workflow, printable claim packet for approved findings.
+- Live dashboard, opportunities, recoveries, invoices, contracts, vendors, documents, settings.
+- `/api/health`, operations runbook (`docs/OPERATIONS.md`), Terms and Privacy pages.

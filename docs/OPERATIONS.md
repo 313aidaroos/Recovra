@@ -9,10 +9,34 @@ Production: https://recovra-three.vercel.app · Database/Auth/Storage: Supabase 
 | `NEXT_PUBLIC_SUPABASE_URL` | Production, Preview | Optional override. Defaults to `https://ewvgpfufzeyzyutjxuoh.supabase.co` (committed in `src/lib/supabase/env.ts`). |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Production, Preview | Optional override. Defaults to the production publishable (`sb_publishable_…`) key, which is browser-safe by design. |
 | `RECOVRA_FORCE_DEMO` | any | Set to `1` to force the labelled demo workspace (e.g. a marketing-only deployment). |
-| `RECOVRA_AI_PROVIDER`, `RECOVRA_AI_API_KEY` | Production | Optional. Enables the Document Agent for PDF/scan extraction. Server-only. |
+| `ANTHROPIC_API_KEY` **or** `OPENAI_API_KEY` | Production (and Preview if wanted) | Optional, server-only (no `NEXT_PUBLIC_` prefix). Turns on PDF invoice transcription. Anthropic is preferred when both are set. |
+| `RECOVRA_AI_PROVIDER` | Production | Optional: `anthropic` or `openai` to force a provider when both keys exist. |
+| `RECOVRA_AI_MODEL` | Production | Optional model override. Defaults: `claude-sonnet-5` (Anthropic) / `gpt-5.4-mini` (OpenAI). |
+| `NEXT_PUBLIC_LEGAL_ENTITY`, `NEXT_PUBLIC_GOVERNING_LAW`, `NEXT_PUBLIC_LEGAL_EMAIL`, `NEXT_PUBLIC_LEGAL_ADDRESS` | Production | Company details shown on `/terms` and `/privacy` (defaults live in `src/lib/legal.ts`). Not secret. |
 
 Never add a Supabase secret / service-role key to Vercel or to any `NEXT_PUBLIC_*` variable.
 With no variables set, a deployment connects to the production Supabase project automatically.
+
+### PDF transcription (Document Agent)
+
+- `src/lib/ingestion/pdf-extractor.ts` sends the PDF to the provider's API and asks only for a
+  transcription of the printed lines (no totals, no estimates). The rows then go through the same
+  deterministic parser and rule engine as CSV/XLSX.
+- Provenance (`provider`, `model`, read `confidence`, `statedTotal`) is stored on the document;
+  the document is left in `needs_review`; each finding's confidence is capped at the read
+  confidence and its recoverability forced to `needs_review` (`src/lib/audit/source-extraction.ts`).
+  Findings show a "rows transcribed from a PDF" notice; the claim packet repeats it.
+- `GET /api/health` reports `features.pdfExtraction: configured|off` so you can confirm the key
+  was picked up without exposing it.
+- Cost/limits: 20 MB per PDF, 120 s timeout, one provider call per upload. Keys are only read in
+  server code; rotate them from the provider dashboard and redeploy.
+
+### Claim packets
+
+- Approved findings expose `/claims/<finding-id>`: a printable dispute letter with calculation,
+  contractual basis, evidence fingerprints and the internal approval trail. It is blocked (with an
+  explanation) until a recovery is `approved` or later, and every generation is written to
+  `audit_logs` as `claim.packet_generated`. People send it; Recovra never emails vendors.
 
 ## 2. Supabase Auth configuration (dashboard → Authentication → URL Configuration)
 
