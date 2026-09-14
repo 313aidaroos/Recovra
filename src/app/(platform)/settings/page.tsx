@@ -1,8 +1,18 @@
 import { Bell, Building2, KeyRound, ShieldCheck, Users } from "lucide-react";
+import { SettingsPanel } from "@/components/live/settings-panel";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { getWorkspace } from "@/lib/auth/workspace";
+import { loadMembers } from "@/lib/db/resources";
 
-export default function SettingsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
+  const workspace = await getWorkspace();
+  if (workspace.mode === "live") {
+    const [members, { saved }] = await Promise.all([loadMembers(workspace), searchParams]);
+    return <SettingsPanel workspace={workspace} members={members} savedMessage={saved === "organization" ? "Organization settings saved." : null}/>;
+  }
   return (
     <>
       <PageHeader eyebrow="Workspace administration" title="Settings" description="Manage organization access, approvals, notifications, and security controls."/>

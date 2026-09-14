@@ -1,0 +1,9 @@
+invoice_number,invoice_date,vendor,currency,line_number,charge_code,description,quantity,unit,unit_price,billed_amount,mode,origin,destination,equipment,service_level,reference,free_days,actual_days
+INV-100234,2026-08-31,Example Ocean Carrier,USD,1,OFR,Ocean freight Shanghai to Los Angeles 40HC,1,container,2650.00,2650.00,ocean,CNSHA,USLAX,40HC,standard,MSKU1234567,,
+INV-100234,2026-08-31,Example Ocean Carrier,USD,2,FSC,Fuel surcharge,1,pct,,530.00,ocean,CNSHA,USLAX,40HC,standard,MSKU1234567,,
+INV-100234,2026-08-31,Example Ocean Carrier,USD,3,DEM,Demurrage at Los Angeles,7,day,150.00,1050.00,ocean,CNSHA,USLAX,40HC,standard,MSKU1234567,5,7
+INV-100234,2026-08-31,Example Ocean Carrier,USD,4,CLEAN,Container cleaning fee,1,each,85.00,85.00,ocean,CNSHA,USLAX,40HC,standard,MSKU1234567,,
+INV-778812,2026-09-02,Example LTL Carrier,USD,1,LH,Linehaul Dallas to Houston 2 pallets,2,pallet,145.00,290.00,ltl,75201,77002,,standard,PRO88821,,
+INV-778812,2026-09-02,Example LTL Carrier,USD,2,FSC,Fuel surcharge,1,pct,,72.50,ltl,75201,77002,,standard,PRO88821,,
+INV-778812,2026-09-02,Example LTL Carrier,USD,3,LIFT,Liftgate service,1,each,95.00,95.00,ltl,75201,77002,,standard,PRO88821,,
+

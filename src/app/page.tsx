@@ -48,7 +48,7 @@ export default function Home() {
         <div className="marketing-links">
           <a href="#platform">Platform</a><a href="#industries">Industries</a><a href="#how">How It Works</a><a href="#customers">Customers</a><a href="#resources">Resources</a><Link href="/pricing">Pricing</Link>
         </div>
-        <div className="marketing-actions"><Link href="/dashboard">Login</Link><Link className="nav-cta" href="/dashboard">Get Started <ArrowRight size={15}/></Link></div>
+        <div className="marketing-actions"><Link href="/login">Login</Link><Link className="nav-cta" href="/signup">Get Started <ArrowRight size={15}/></Link></div>
       </nav>
 
       <section className="hero enterprise-hero">
@@ -112,10 +112,10 @@ export default function Home() {
 
       <section className="enterprise-cta" id="customers">
         <div className="cta-quote"><Sparkles size={22}/><blockquote>“The strongest recovery programs connect every finding to proof, ownership, and a measurable outcome.”</blockquote><span>Illustrative customer outcome · not a customer testimonial</span></div>
-        <div><span className="eyebrow">Turn expenses into opportunities</span><h2>Stop leaving money<br/>on the table.</h2><p>Join the companies using Recovra’s operating model to recover more, control spend, and build a stronger bottom line.</p><div className="hero-actions"><Link className="primary-cta" href="/dashboard">Get Started <ArrowRight size={16}/></Link><Link className="ghost-cta" href="/dashboard">Talk to Sales</Link></div></div>
+        <div><span className="eyebrow">Turn expenses into opportunities</span><h2>Stop leaving money<br/>on the table.</h2><p>Join the companies using Recovra’s operating model to recover more, control spend, and build a stronger bottom line.</p><div className="hero-actions"><Link className="primary-cta" href="/signup">Get Started <ArrowRight size={16}/></Link><Link className="ghost-cta" href="/dashboard">Talk to Sales</Link></div></div>
       </section>
 
-      <footer id="resources"><Brand/><p>Find overcharges. Recover savings. Control spend.</p><span>© 2026 Recovra · Demo platform</span></footer>
+      <footer id="resources"><Brand/><p>Find overcharges. Recover savings. Control spend.</p><nav><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/pricing">Pricing</Link><Link href="/login">Sign in</Link></nav><span>© 2026 Recovra</span></footer>
     </main>
   );
 }

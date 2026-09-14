@@ -1,10 +1,20 @@
--- Recovra starter schema. Review in a dev project before production use.
+-- Recovra core schema (agreement -> charge -> activity -> expected cost -> variance -> evidence -> recovery -> prevention).
 create extension if not exists pgcrypto;
 
 create table if not exists public.organizations (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   slug text not null unique,
+  currency text not null default 'USD',
+  review_threshold numeric(20,6) not null default 1000,
+  created_at timestamptz not null default now()
+);
+
+-- Mirror of auth.users for member directories. Never store secrets here.
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text,
+  full_name text,
   created_at timestamptz not null default now()
 );
 
@@ -107,24 +117,31 @@ create table if not exists public.invoices (
   created_at timestamptz not null default now()
 );
 
-create unique index if not exists invoices_org_vendor_number_unique
-  on public.invoices(organization_id, vendor_id, invoice_number)
-  where invoice_number is not null;
+-- Duplicate invoice numbers are allowed on purpose: the accounts-payable
+-- duplicate-invoice rule flags them as findings instead of rejecting ingestion.
+create index if not exists invoices_org_vendor_number_idx
+  on public.invoices(organization_id, vendor_id, invoice_number);
 
 create table if not exists public.invoice_lines (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
   invoice_id uuid not null references public.invoices(id) on delete cascade,
   external_line_id text,
+  line_number integer,
   description text,
   quantity numeric(20,6),
   unit text,
   unit_price numeric(20,6),
   billed_amount numeric(20,6) not null,
   charge_code text,
+  -- Freight dimensions: mode, origin, destination, equipment, service_level,
+  -- reference (BOL / container / tracking), free_days, actual_days, ...
+  dimensions jsonb not null default '{}'::jsonb,
   source_locator jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
+
+create index if not exists invoice_lines_invoice_idx on public.invoice_lines(invoice_id);
 
 create table if not exists public.operational_events (
   id uuid primary key default gen_random_uuid(),
@@ -171,8 +188,16 @@ create table if not exists public.findings (
   calculation_trace jsonb not null default '{}'::jsonb,
   evidence jsonb not null default '[]'::jsonb,
   status text not null default 'open',
-  created_at timestamptz not null default now()
+  invoice_id uuid references public.invoices(id) on delete cascade,
+  contract_id uuid references public.contracts(id) on delete set null,
+  -- Deterministic key so re-running an audit on the same invoice never duplicates a finding.
+  dedupe_key text not null,
+  created_at timestamptz not null default now(),
+  unique (organization_id, dedupe_key)
 );
+
+create index if not exists findings_org_status_idx on public.findings(organization_id, status);
+create index if not exists findings_invoice_idx on public.findings(invoice_id);
 
 create table if not exists public.finding_evidence (
   id uuid primary key default gen_random_uuid(),
@@ -191,8 +216,9 @@ create table if not exists public.finding_evidence (
 create table if not exists public.recoveries (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
-  finding_id uuid not null references public.findings(id) on delete cascade,
-  status text not null default 'detected',
+  finding_id uuid not null references public.findings(id) on delete cascade unique,
+  status text not null default 'detected'
+    check (status in ('detected','reviewing','verified','approval_requested','approved','rejected','submitted','vendor_reviewing','recovered','closed')),
   claimed_amount numeric(20,6),
   approved_amount numeric(20,6),
   realized_amount numeric(20,6),
@@ -260,6 +286,7 @@ create table if not exists public.notifications (
 );
 
 -- RLS
+alter table public.profiles enable row level security;
 alter table public.organizations enable row level security;
 alter table public.organization_members enable row level security;
 alter table public.vendors enable row level security;
@@ -333,5 +360,4 @@ using (
   and exists (select 1 from public.organization_members m where m.organization_id = notifications.organization_id and m.user_id = (select auth.uid()))
 );
 
--- For MVP writes, route through authenticated server-side actions after verifying membership/role.
--- Add granular INSERT/UPDATE/DELETE policies only for client-side operations you intentionally expose.
+-- Write policies, role helpers, RPCs and storage live in 20260912000002_access_control.sql.

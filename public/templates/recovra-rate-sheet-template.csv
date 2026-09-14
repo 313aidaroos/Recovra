@@ -1,0 +1,9 @@
+vendor,contract,charge_code,term_type,rate,basis,unit,percent,percent_basis,free_days,minimum,currency,mode,origin,destination,equipment,service_level,effective_from,effective_to,clause
+Example Ocean Carrier,2026 Transpacific FAK Tariff,OFR,rate,2400.00,per_unit,container,,,,,USD,ocean,CNSHA,USLAX,40HC,standard,2026-01-01,2026-12-31,Section 3.1 Ocean freight
+Example Ocean Carrier,2026 Transpacific FAK Tariff,OFR,rate,3100.00,per_unit,container,,,,,USD,ocean,CNSHA,USNYC,40HC,standard,2026-01-01,2026-12-31,Section 3.1 Ocean freight
+Example Ocean Carrier,2026 Transpacific FAK Tariff,FSC,percent,,,,18,OFR,,,USD,ocean,,,,,2026-01-01,2026-12-31,Section 4.2 Bunker adjustment factor
+Example Ocean Carrier,2026 Transpacific FAK Tariff,DEM,free_time,125.00,per_unit,day,,,7,,USD,ocean,,USLAX,,,2026-01-01,2026-12-31,Section 6 Demurrage free time
+Example Ocean Carrier,2026 Transpacific FAK Tariff,DOC,allowed_charge,,,,,,,,USD,ocean,,,,,2026-01-01,2026-12-31,Section 5 Documentation fee permitted
+Example LTL Carrier,2026 Texas Intrastate LTL Agreement,LH,rate,130.00,per_unit,pallet,,,,,USD,ltl,75201,77002,,standard,2026-01-01,2026-12-31,Exhibit A Lane rates
+Example LTL Carrier,2026 Texas Intrastate LTL Agreement,FSC,percent,,,,22,LH,,,USD,ltl,,,,,2026-01-01,2026-12-31,Exhibit B Fuel surcharge table
+Example LTL Carrier,2026 Texas Intrastate LTL Agreement,LIFT,rate,75.00,flat,each,,,,,USD,ltl,,,,,2026-01-01,2026-12-31,Exhibit C Accessorials
