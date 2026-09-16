@@ -14,8 +14,9 @@ The recovery engine is a shared deterministic core with vertical rule packs.
 
 - `src/lib/recovery-engine/core` — shared money, rule, finding, and execution contracts.
 - `src/lib/recovery-engine/modules` — vertical rules that implement the common `RecoveryRule` interface.
-- `src/lib/demo/sample-audit.ts` — public demo adapter. Parses CSV/XLSX in memory and runs the same rules as production. Nothing is stored; no claim is sent.
-- `src/app/api/demo/analyze` — GET runs the bundled templates; POST accepts an invoice (and optional rate sheet). Labeled demo. Not a tenant audit job.
+- `src/lib/demo/sample-audit.ts` — public demo adapter. Parses CSV/XLSX in memory and runs the same rules as production. Visitor uploads are not stored.
+- `src/lib/demo/persist-demo-run.ts` — upserts Recovra's bundled sample into `demo_audit_runs` (labeled demo, `claims_sent` forced false). No recoveries, no claims.
+- `src/app/api/demo/analyze` — GET runs the bundled templates and persists them; POST of visitor files stays in-memory.
 - `/audit` — public intake → finding UI with evidence locators and calculation traces.
 
 ## Rule output

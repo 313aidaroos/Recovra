@@ -26,8 +26,21 @@ export async function GET() {
   }
 
   const healthy = Object.values(checks).every((check) => check.ok) || !isSupabaseConfigured();
-  // Informational only: PDF transcription is optional and never affects liveness.
-  const features = { pdfExtraction: isPdfExtractionConfigured() ? "configured" : "off" };
+
+  let demoPersistence: "configured" | "off" = "off";
+  if (env) {
+    try {
+      const { createAnonSupabase } = await import("@/lib/supabase/anon");
+      const supabase = createAnonSupabase();
+      const probe = supabase ? await supabase.from("demo_audit_runs").select("id", { count: "exact", head: true }) : { error: { message: "no client" } };
+      if (!probe.error) demoPersistence = "configured";
+    } catch {
+      demoPersistence = "off";
+    }
+  }
+
+  // Informational only: PDF transcription and demo persistence never affect liveness.
+  const features = { pdfExtraction: isPdfExtractionConfigured() ? "configured" : "off", demoPersistence };
   return NextResponse.json(
     { status: healthy ? "ok" : "degraded", mode: isSupabaseConfigured() ? "live" : "demo", checks, features, uptimeMs: Math.round(process.uptime() * 1000), durationMs: Date.now() - startedAt, timestamp: new Date().toISOString() },
     { status: healthy ? 200 : 503, headers: { "cache-control": "no-store" } },

@@ -11,6 +11,9 @@ tenant isolation, so no service-role key is deployed anywhere.
 | `migrations/20260912000001_core_schema.sql` | Organizations, members, profiles, vendors, documents, contracts/terms, invoices/lines, operational events, audit runs, findings, evidence, recoveries, approvals, savings ledger, audit logs, notifications, module configs. `numeric(20,6)` for all money. RLS enabled + select policies. |
 | `migrations/20260912000002_access_control.sql` | Role helpers (`is_org_member`, `has_org_role`), profile trigger, write policies per role, RPCs `create_organization` and `add_organization_member`, private `documents` storage bucket with folder policies. |
 | `migrations/20260912000003_function_hardening.sql` | Revokes function execution from `anon`/`public`, hardens `search_path`. |
+| `migrations/20260912000004_discard_failed_document.sql` | RPC to discard a failed document and derived rows before retry. |
+| `migrations/20260912000005_discard_failed_document_release.sql` | Follow-up release of discard_failed_document. |
+| `migrations/20260916000001_demo_audit_runs.sql` | Labeled public demo audit table + `upsert_demo_audit_run` RPC. Isolated from tenant tables. `claims_sent` constrained to false. |
 
 Apply new migrations with the Supabase CLI (`supabase db push`) or the dashboard SQL editor.
 Never edit an applied migration; add a new timestamped file.

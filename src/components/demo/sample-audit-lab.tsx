@@ -12,6 +12,7 @@ type ApiResponse = {
   message?: string;
   error?: string;
   result?: SampleAuditResult;
+  persistence?: { persisted: true; id: string } | { persisted: false; reason: string };
 };
 
 export function SampleAuditLab() {
@@ -22,6 +23,7 @@ export function SampleAuditLab() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SampleAuditResult | null>(null);
+  const [persistence, setPersistence] = useState<ApiResponse["persistence"]>();
 
   async function run(kind: "sample" | "upload") {
     setPending(true);
@@ -50,6 +52,7 @@ export function SampleAuditLab() {
         return;
       }
       setResult(body.result);
+      setPersistence(body.persistence);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Network error.");
       setResult(null);
@@ -108,12 +111,12 @@ export function SampleAuditLab() {
 
       {error && <p className="form-status error" role="alert"><AlertTriangle size={14}/> {error}</p>}
 
-      {result && <AuditResult result={result} findingCount={selectedFindingCount}/>}
+      {result && <AuditResult result={result} findingCount={selectedFindingCount} persistence={persistence}/>}
     </div>
   );
 }
 
-function AuditResult({ result, findingCount }: { result: SampleAuditResult; findingCount: number }) {
+function AuditResult({ result, findingCount, persistence }: { result: SampleAuditResult; findingCount: number; persistence?: ApiResponse["persistence"] }) {
   const [openKey, setOpenKey] = useState<string | null>(result.invoices[0]?.findings[0]?.dedupeKey ?? null);
   const findings = useMemo(() => result.invoices.flatMap((invoice) => invoice.findings.map((finding) => ({ invoice, finding }))), [result]);
 
@@ -126,6 +129,11 @@ function AuditResult({ result, findingCount }: { result: SampleAuditResult; find
         <div><span>Claims sent</span><strong>0</strong><small>Human approval required</small></div>
       </div>
       <p className="form-status success"><CheckCircle2 size={14}/> {result.message}</p>
+      {persistence?.persisted ? (
+        <p className="muted-note">Saved to Recovra Postgres as demo run {persistence.id}. Labeled demo. Claims sent: 0.</p>
+      ) : persistence && !persistence.persisted ? (
+        <p className="muted-note">{persistence.reason}</p>
+      ) : null}
       {result.warnings.length > 0 && (
         <details className="muted-note"><summary>{result.warnings.length} parser warning{result.warnings.length === 1 ? "" : "s"}</summary><ul>{result.warnings.slice(0, 20).map((warning) => <li key={warning}>{warning}</li>)}</ul></details>
       )}

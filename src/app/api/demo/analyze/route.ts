@@ -1,20 +1,25 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { NextResponse } from "next/server";
-import { isSpreadsheetFile } from "@/lib/ingestion/tabular";
+import { demoTemplateContentHash, persistDemoAuditRun, type DemoPersistResult } from "@/lib/demo/persist-demo-run";
 import { runBundledSampleAudit, runSampleAuditFromFiles, type SampleAuditResult } from "@/lib/demo/sample-audit";
+import { isSpreadsheetFile } from "@/lib/ingestion/tabular";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
-function payload(result: SampleAuditResult) {
+function payload(result: SampleAuditResult, persistence: DemoPersistResult | { persisted: false; reason: string }) {
+  const persistedMessage = persistence.persisted
+    ? `Demo data. Findings calculated from the bundled templates and saved to Recovra's database as run ${persistence.id}. Nothing was claimed; human approval is required before any vendor claim.`
+    : result.message;
   return {
     demo: true,
     claimsSent: false,
-    message: result.message,
+    message: persistedMessage,
     source: result.source,
+    persistence,
     audit_run: {
       status: "completed",
       findings: result.totals.findings,
@@ -23,6 +28,8 @@ function payload(result: SampleAuditResult) {
       variance: result.totals.variance,
       recoverable: result.totals.recoverable,
       needsReview: result.totals.needsReview,
+      persisted: persistence.persisted,
+      id: persistence.persisted ? persistence.id : null,
     },
     result,
   };
@@ -34,14 +41,17 @@ async function bundledSample() {
     readFile(join(dir, "recovra-invoice-template.csv"), "utf8"),
     readFile(join(dir, "recovra-rate-sheet-template.csv"), "utf8"),
   ]);
-  return runBundledSampleAudit(invoiceCsv, rateSheetCsv);
+  const result = runBundledSampleAudit(invoiceCsv, rateSheetCsv);
+  const persistence = await persistDemoAuditRun(result, demoTemplateContentHash(invoiceCsv, rateSheetCsv));
+  return { result, persistence };
 }
 
 export async function GET() {
   try {
-    return NextResponse.json(payload(await bundledSample()));
+    const { result, persistence } = await bundledSample();
+    return NextResponse.json(payload(result, persistence));
   } catch (error) {
-    return NextResponse.json({ demo: true, error: error instanceof Error ? error.message : "Sample audit failed." }, { status: 500 });
+    return NextResponse.json({ demo: true, claimsSent: false, error: error instanceof Error ? error.message : "Sample audit failed." }, { status: 500 });
   }
 }
 
@@ -57,16 +67,23 @@ export async function POST(request: Request) {
   try {
     const contentType = request.headers.get("content-type") ?? "";
     if (!contentType.includes("multipart/form-data")) {
-      return NextResponse.json(payload(await bundledSample()));
+      const { result, persistence } = await bundledSample();
+      return NextResponse.json(payload(result, persistence));
     }
 
     const form = await request.formData();
     const invoice = await fileFromForm(form, "invoice") ?? await fileFromForm(form, "file");
     const rateSheet = await fileFromForm(form, "rate_sheet") ?? await fileFromForm(form, "ratesheet");
-    if (!invoice) return NextResponse.json(payload(await bundledSample()));
+    if (!invoice) {
+      const { result, persistence } = await bundledSample();
+      return NextResponse.json(payload(result, persistence));
+    }
 
     const result = await runSampleAuditFromFiles(invoice, rateSheet ?? undefined);
-    return NextResponse.json(payload(result));
+    return NextResponse.json(payload(result, {
+      persisted: false,
+      reason: "Visitor uploads are audited in memory only and are not written to Recovra's database.",
+    }));
   } catch (error) {
     return NextResponse.json({ demo: true, claimsSent: false, error: error instanceof Error ? error.message : "Audit failed." }, { status: 400 });
   }
