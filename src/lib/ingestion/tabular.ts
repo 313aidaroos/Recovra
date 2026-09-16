@@ -117,12 +117,16 @@ export function isSpreadsheetFile(filename: string, mimeType: string) {
   return lower.endsWith(".csv") || lower.endsWith(".xlsx") || mimeType === "text/csv" || mimeType.includes("spreadsheetml");
 }
 
+export function parseCsvText(text: string, sheet: string | null = null): TabularTable {
+  return toTable(parseCsv(text), sheet);
+}
+
 export async function parseTabularFile(filename: string, buffer: ArrayBuffer): Promise<TabularTable[]> {
   const lower = filename.toLowerCase();
   if (lower.endsWith(".xlsx")) return parseXlsx(buffer);
   if (lower.endsWith(".csv") || lower.endsWith(".txt")) {
     const text = new TextDecoder("utf-8").decode(buffer);
-    return [toTable(parseCsv(text), null)];
+    return [parseCsvText(text, null)];
   }
   throw new Error(`Unsupported tabular file type: ${filename}`);
 }

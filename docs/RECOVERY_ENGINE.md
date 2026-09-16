@@ -14,7 +14,9 @@ The recovery engine is a shared deterministic core with vertical rule packs.
 
 - `src/lib/recovery-engine/core` — shared money, rule, finding, and execution contracts.
 - `src/lib/recovery-engine/modules` — vertical rules that implement the common `RecoveryRule` interface.
-- `src/app/api/demo/analyze` — clearly labeled sample adapter. It is not a production audit job.
+- `src/lib/demo/sample-audit.ts` — public demo adapter. Parses CSV/XLSX in memory and runs the same rules as production. Nothing is stored; no claim is sent.
+- `src/app/api/demo/analyze` — GET runs the bundled templates; POST accepts an invoice (and optional rate sheet). Labeled demo. Not a tenant audit job.
+- `/audit` — public intake → finding UI with evidence locators and calculation traces.
 
 ## Rule output
 

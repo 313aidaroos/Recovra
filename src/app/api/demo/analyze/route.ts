@@ -1,50 +1,73 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { NextResponse } from "next/server";
-import { logisticsRateVarianceRule, runRecoveryEngine } from "@/lib/recovery-engine";
+import { isSpreadsheetFile } from "@/lib/ingestion/tabular";
+import { runBundledSampleAudit, runSampleAuditFromFiles, type SampleAuditResult } from "@/lib/demo/sample-audit";
 
-/** Sample adapter: shows the engine's deterministic output shape without touching tenant data. */
-export async function POST() {
-  const result = runRecoveryEngine({
-    organizationId: "00000000-0000-0000-0000-000000000001",
-    vendorId: "sample-northstar",
-    invoiceId: "sample-invoice",
-    invoiceNumber: "NSP-884103",
-    invoiceTotal: "11680.00",
-    invoiceDocumentId: "sample-invoice-document",
-    currency: "USD",
-    activeModules: ["logistics"],
-    lines: [{
-      chargeId: "sample-invoice-line-001",
-      invoiceId: "sample-invoice",
-      invoiceNumber: "NSP-884103",
-      lineNumber: 1,
-      vendorId: "sample-northstar",
-      currency: "USD",
-      chargeCode: "RES_SURCHARGE",
-      description: "Residential delivery surcharge",
-      quantity: "1000",
-      unit: "SHIPMENT",
-      unitPrice: "11.68",
-      billedAmount: "11680.00",
-      dimensions: { mode: "PARCEL" },
-      evidence: [{ documentId: "sample-invoice-document", kind: "invoice", locator: "page:4", label: "Sample invoice lines" }],
-    }],
-    terms: [{
-      termId: "sample-term",
-      contractId: "sample-contract",
-      contractTitle: "Parcel Services Agreement 2026",
-      termType: "rate",
-      chargeCode: "RES_SURCHARGE",
-      dimensions: { mode: "PARCEL" },
-      value: { rate: "4.15", unit: "SHIPMENT", clause: "Section 4.2 · Residential Delivery Surcharge" },
-      evidence: { documentId: "sample-contract-document", kind: "contract", locator: "section:4.2", label: "Sample rate clause" },
-    }],
-    priorInvoices: [],
-  }, [logisticsRateVarianceRule]);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-  return NextResponse.json({
+const MAX_BYTES = 2 * 1024 * 1024;
+
+function payload(result: SampleAuditResult) {
+  return {
     demo: true,
-    message: "Sample adapter only. Tenant audits run through the authenticated ingestion workflow.",
-    audit_run: { status: "completed", findings: result.findings.length, currency: "USD" },
+    claimsSent: false,
+    message: result.message,
+    source: result.source,
+    audit_run: {
+      status: "completed",
+      findings: result.totals.findings,
+      currency: result.invoices[0]?.currency ?? "USD",
+      billed: result.totals.billed,
+      variance: result.totals.variance,
+      recoverable: result.totals.recoverable,
+      needsReview: result.totals.needsReview,
+    },
     result,
-  });
+  };
+}
+
+async function bundledSample() {
+  const dir = join(process.cwd(), "public", "templates");
+  const [invoiceCsv, rateSheetCsv] = await Promise.all([
+    readFile(join(dir, "recovra-invoice-template.csv"), "utf8"),
+    readFile(join(dir, "recovra-rate-sheet-template.csv"), "utf8"),
+  ]);
+  return runBundledSampleAudit(invoiceCsv, rateSheetCsv);
+}
+
+export async function GET() {
+  try {
+    return NextResponse.json(payload(await bundledSample()));
+  } catch (error) {
+    return NextResponse.json({ demo: true, error: error instanceof Error ? error.message : "Sample audit failed." }, { status: 500 });
+  }
+}
+
+async function fileFromForm(form: FormData, key: string) {
+  const value = form.get(key);
+  if (!(value instanceof File) || value.size === 0) return null;
+  if (value.size > MAX_BYTES) throw new Error(`${value.name} is over 2 MB. Demo uploads are capped so nothing is stored.`);
+  if (!isSpreadsheetFile(value.name, value.type)) throw new Error(`${value.name} must be CSV or XLSX.`);
+  return { name: value.name, buffer: await value.arrayBuffer() };
+}
+
+export async function POST(request: Request) {
+  try {
+    const contentType = request.headers.get("content-type") ?? "";
+    if (!contentType.includes("multipart/form-data")) {
+      return NextResponse.json(payload(await bundledSample()));
+    }
+
+    const form = await request.formData();
+    const invoice = await fileFromForm(form, "invoice") ?? await fileFromForm(form, "file");
+    const rateSheet = await fileFromForm(form, "rate_sheet") ?? await fileFromForm(form, "ratesheet");
+    if (!invoice) return NextResponse.json(payload(await bundledSample()));
+
+    const result = await runSampleAuditFromFiles(invoice, rateSheet ?? undefined);
+    return NextResponse.json(payload(result));
+  } catch (error) {
+    return NextResponse.json({ demo: true, claimsSent: false, error: error instanceof Error ? error.message : "Audit failed." }, { status: 400 });
+  }
 }
