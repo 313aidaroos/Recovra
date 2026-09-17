@@ -16,7 +16,7 @@ export interface CixyChatState {
 export async function sendCixyMessage(_previous: CixyChatState, formData: FormData): Promise<CixyChatState> {
   try {
     // Require live workspace to ensure tenant isolation
-    const workspace = await requireLiveWorkspace();
+    await requireLiveWorkspace();
 
     const userMessage = String(formData.get("message") ?? "").trim();
     if (userMessage.length === 0) {
