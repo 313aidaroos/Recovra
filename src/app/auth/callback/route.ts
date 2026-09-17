@@ -1,20 +1,22 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { authCallbackTarget } from "@/lib/auth/redirects";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-/** Exchanges the one-time code from confirmation / magic-link emails for a session. */
+/** Exchanges confirmation / magic-link params for a session. */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const rawNext = searchParams.get("next") ?? "/dashboard";
-  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/dashboard";
+  const target = authCallbackTarget(searchParams);
 
-  if (code) {
+  if (target.kind !== "error") {
     const supabase = await createServerSupabase();
     if (supabase) {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (!error) return NextResponse.redirect(`${origin}${next}`);
+      const outcome = target.kind === "code"
+        ? await supabase.auth.exchangeCodeForSession(target.code)
+        : await supabase.auth.verifyOtp({ token_hash: target.tokenHash, type: target.type as "signup" | "magiclink" | "recovery" | "email_change" });
+      if (!outcome.error) return NextResponse.redirect(`${origin}${target.next}`);
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=link_invalid`);
+  const reason = target.kind === "error" ? target.reason : "link_invalid";
+  return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(reason)}`);
 }

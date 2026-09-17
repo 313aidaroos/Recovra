@@ -5,6 +5,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ACTIVE_ORG_COOKIE, getWorkspace, requireLiveWorkspace, writeAuditLog } from "./workspace";
+import { magicLinkRedirect, safeNextPath } from "./redirects";
 import { ADMIN_ROLES, ORGANIZATION_ROLES, type OrganizationRole } from "@/types/workspace";
 
 export type AuthFormState = { error?: string; message?: string };
@@ -14,11 +15,6 @@ async function siteOrigin() {
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "localhost:3000";
   const protocol = headerList.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   return `${protocol}://${host}`;
-}
-
-function safeNextPath(value: FormDataEntryValue | null) {
-  const next = typeof value === "string" ? value : "";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
 }
 
 export async function signInAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -47,13 +43,30 @@ export async function signUpAction(_previous: AuthFormState, formData: FormData)
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName }, emailRedirectTo: `${origin}/auth/callback?next=/onboarding` },
+    options: { data: { full_name: fullName }, emailRedirectTo: magicLinkRedirect(origin, "/onboarding") },
   });
   if (error) return { error: error.message };
   if (data.session) redirect("/onboarding");
   // The confirmation link verifies the account server-side even if the page it lands on is not
   // this deployment, so a password sign-in afterwards always works.
   return { message: `Account created. We emailed a confirmation link to ${email}. Click it, then come back to this site and sign in with your password to create your organization.` };
+}
+
+export async function signUpMagicLinkAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const supabase = await createServerSupabase();
+  if (!supabase) return { error: "Authentication is not configured for this deployment." };
+
+  const email = String(formData.get("email") ?? "").trim();
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  if (!email) return { error: "Enter your email." };
+
+  const origin = await siteOrigin();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: true, data: { full_name: fullName }, emailRedirectTo: magicLinkRedirect(origin, "/onboarding") },
+  });
+  if (error) return { error: error.message };
+  return { message: `Magic signup link sent to ${email}. Open it to enter Recovra and create your organization.` };
 }
 
 export async function sendMagicLinkAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -64,7 +77,7 @@ export async function sendMagicLinkAction(_previous: AuthFormState, formData: Fo
   const origin = await siteOrigin();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${origin}/auth/callback?next=/dashboard` },
+    options: { emailRedirectTo: magicLinkRedirect(origin, safeNextPath(formData.get("next"))) },
   });
   if (error) return { error: error.message };
   return { message: "Magic link sent. Open the email on this device to sign in. If the link does not open this site, sign in with your password instead." };

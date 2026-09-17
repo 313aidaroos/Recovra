@@ -23,6 +23,7 @@ export function SignInForm({ next, initialError }: { next: string; initialError?
       </form>
       <div className="auth-divider"><span>or</span></div>
       <form action={linkAction} className="auth-form compact">
+        <input type="hidden" name="next" value={next}/>
         <label>Email me a magic link<input name="email" type="email" autoComplete="email" required placeholder="you@company.com"/></label>
         <FormStatus state={linkState}/>
         <button className="secondary-button tall wide" type="submit" disabled={linkPending}><Mail size={15}/> {linkPending ? "Sending…" : "Send magic link"}</button>

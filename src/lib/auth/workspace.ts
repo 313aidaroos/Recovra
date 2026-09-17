@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import { createServerSupabase, type ServerSupabase } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { ensureOwnerWorkspace } from "./owner";
 import type { Membership, Organization, OrganizationRole, WorkspaceUser } from "@/types/workspace";
 
 export const ACTIVE_ORG_COOKIE = "recovra-org";
@@ -30,6 +31,20 @@ type MembershipRow = {
   organization: Organization | Organization[] | null;
 };
 
+async function loadMemberships(supabase: ServerSupabase): Promise<Membership[]> {
+  const { data: rows } = await supabase
+    .from("organization_members")
+    .select("role, organization:organizations(id, name, slug, currency, review_threshold)")
+    .order("created_at", { ascending: true });
+
+  return ((rows ?? []) as MembershipRow[])
+    .map((row) => {
+      const organization = Array.isArray(row.organization) ? row.organization[0] : row.organization;
+      return organization ? { role: row.role, organization } : null;
+    })
+    .filter((row): row is Membership => row !== null);
+}
+
 export const getWorkspace = cache(async (): Promise<WorkspaceContext> => {
   if (!isSupabaseConfigured()) return { mode: "demo", configured: false };
   const supabase = await createServerSupabase();
@@ -44,17 +59,11 @@ export const getWorkspace = cache(async (): Promise<WorkspaceContext> => {
     fullName: (auth.user.user_metadata?.full_name as string | undefined) ?? "",
   };
 
-  const { data: rows } = await supabase
-    .from("organization_members")
-    .select("role, organization:organizations(id, name, slug, currency, review_threshold)")
-    .order("created_at", { ascending: true });
-
-  const memberships: Membership[] = ((rows ?? []) as MembershipRow[])
-    .map((row) => {
-      const organization = Array.isArray(row.organization) ? row.organization[0] : row.organization;
-      return organization ? { role: row.role, organization } : null;
-    })
-    .filter((row): row is Membership => row !== null);
+  let memberships = await loadMemberships(supabase);
+  if (memberships.length === 0) {
+    const bootstrap = await ensureOwnerWorkspace({ email: user.email, rpc: async (name) => await supabase.rpc(name) });
+    if (bootstrap.attempted && bootstrap.ok) memberships = await loadMemberships(supabase);
+  }
 
   if (memberships.length === 0) return { mode: "onboarding", user, supabase };
 

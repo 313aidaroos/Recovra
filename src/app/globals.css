@@ -83,3 +83,6 @@ select,textarea{font:inherit}.marketing-actions{display:flex;align-items:center;
 tr.selected-row td{background:rgba(121,226,167,.06)}
 .audit-result .table-wrap tr{cursor:pointer}
 @media(max-width:900px){.audit-grid{grid-template-columns:1fr}.audit-hero h1{font-size:32px}}
+.support-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}
+.support-page textarea{background:#08130f;color:var(--text);border:1px solid #22352c;border-radius:10px;padding:11px;outline:none}
+@media(max-width:900px){.support-grid{grid-template-columns:1fr}}

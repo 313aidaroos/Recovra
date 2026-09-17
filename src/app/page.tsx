@@ -46,7 +46,7 @@ export default function Home() {
       <nav className="marketing-nav">
         <Brand/>
         <div className="marketing-links">
-          <Link href="/audit">Sample audit</Link><a href="#platform">Platform</a><a href="#industries">Industries</a><a href="#how">How It Works</a><Link href="/pricing">Pricing</Link>
+          <Link href="/audit">Sample audit</Link><a href="#platform">Platform</a><a href="#industries">Industries</a><a href="#how">How It Works</a><Link href="/support">Support</Link><Link href="/pricing">Pricing</Link>
         </div>
         <div className="marketing-actions"><Link href="/login">Login</Link><Link className="nav-cta" href="/signup">Get Started <ArrowRight size={15}/></Link></div>
       </nav>
@@ -115,7 +115,7 @@ export default function Home() {
         <div><span className="eyebrow">Turn expenses into opportunities</span><h2>Stop leaving money<br/>on the table.</h2><p>Join the companies using Recovra’s operating model to recover more, control spend, and build a stronger bottom line.</p><div className="hero-actions"><Link className="primary-cta" href="/signup">Get Started <ArrowRight size={16}/></Link><Link className="ghost-cta" href="/audit">Try the sample audit</Link></div></div>
       </section>
 
-      <footer id="resources"><Brand/><p>Find overcharges. Recover savings. Control spend.</p><nav><Link href="/audit">Sample audit</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/pricing">Pricing</Link><Link href="/login">Sign in</Link></nav><span>© 2026 Recovra</span></footer>
+      <footer id="resources"><Brand/><p>Find overcharges. Recover savings. Control spend.</p><nav><Link href="/audit">Sample audit</Link><Link href="/support">Support</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/pricing">Pricing</Link><Link href="/login">Sign in</Link></nav><span>© 2026 Recovra</span></footer>
     </main>
   );
 }

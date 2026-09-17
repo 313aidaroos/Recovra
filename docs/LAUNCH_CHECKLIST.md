@@ -10,10 +10,10 @@ ordered by impact. Each one links to the exact screen.
    variables are required.
 2. **Sign in and rotate the bootstrap password** — https://recovra-three.vercel.app/login
    Then Settings → Security → *Change password*. Create your organization on the onboarding screen.
-3. **Supabase Auth URLs (you)** — https://supabase.com/dashboard/project/ewvgpfufzeyzyutjxuoh/auth/url-configuration
+3. **Supabase Auth URLs** — https://supabase.com/dashboard/project/ewvgpfufzeyzyutjxuoh/auth/url-configuration
    - Site URL: `https://recovra-three.vercel.app`
    - Redirect URLs: `https://recovra-three.vercel.app/auth/callback`, `https://*.vercel.app/auth/callback`
-   Without this, confirmation / magic-link emails for *new* signups point at localhost.
+   Applied for the current Vercel URL. Update again after adding a custom domain.
 
 ## B. Before a paying customer sees it
 

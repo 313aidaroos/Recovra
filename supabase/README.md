@@ -14,6 +14,7 @@ tenant isolation, so no service-role key is deployed anywhere.
 | `migrations/20260912000004_discard_failed_document.sql` | RPC to discard a failed document and derived rows before retry. |
 | `migrations/20260912000005_discard_failed_document_release.sql` | Follow-up release of discard_failed_document. |
 | `migrations/20260916000001_demo_audit_runs.sql` | Labeled public demo audit table + `upsert_demo_audit_run` RPC. Isolated from tenant tables. `claims_sent` constrained to false. |
+| `migrations/20260916000002_auth_owner_support.sql` | Owner bootstrap for `awad@apixis.dev`, magic-link-safe auth support, and public support queue routed from `recovra@apixis.dev` to `awad@apixis.dev`. |
 
 Apply new migrations with the Supabase CLI (`supabase db push`) or the dashboard SQL editor.
 Never edit an applied migration; add a new timestamped file.
