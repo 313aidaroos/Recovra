@@ -25,6 +25,7 @@ import {
   X,
 } from "lucide-react";
 import { signOutAction, switchOrganizationAction } from "@/lib/auth/actions";
+import { BuyIxisLink } from "@/components/wallet/buy-ixis-link";
 import { Brand } from "./brand";
 
 export type ShellNotification = { id: string; title: string; body: string; href: string; tone: "info" | "warn" | "risk" };
@@ -104,6 +105,7 @@ export function AppShell({ children, workspace }: { children: React.ReactNode; w
       </nav>
       <div className="sidebar-bottom">
         <Link href="/documents" className="nav-item"><CircleHelp size={18}/><span>Getting started</span></Link>
+        <BuyIxisLink returnPath="/dashboard" className="nav-item" icon label="Buy Ixis" />
         <Link href="/settings" className={`nav-item ${path.startsWith("/settings") ? "active" : ""}`}><Settings2 size={18}/><span>Settings</span></Link>
         {live ? (
           <div className="workspace-card interactive">
@@ -130,6 +132,7 @@ export function AppShell({ children, workspace }: { children: React.ReactNode; w
         <button className="mobile-menu" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}><Menu size={19}/></button>
         <button className="command-search" onClick={() => setSearchOpen(true)}><Search size={17}/><span>Search spend, vendors, findings…</span><kbd>⌘ K</kbd></button>
         <div className="top-actions">
+          <BuyIxisLink returnPath="/dashboard" className="primary-button wallet-top-link" icon />
           {live ? (
             <span className="demo-environment live">{workspace.organizationName}</span>
           ) : (

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { SampleAuditLab } from "@/components/demo/sample-audit-lab";
+import { BuyIxisLink } from "@/components/wallet/buy-ixis-link";
 
 export const metadata: Metadata = {
   title: "Sample audit",
@@ -17,10 +18,12 @@ export default function AuditPage() {
         <div className="marketing-links">
           <Link href="/#how">How it works</Link>
           <Link href="/pricing">Pricing</Link>
+          <BuyIxisLink returnPath="/pricing" label="Wallet" />
           <Link href="/login">Login</Link>
         </div>
         <div className="marketing-actions">
           <Link href="/login">Sign in</Link>
+          <BuyIxisLink returnPath="/pricing" className="wallet-inline" icon />
           <Link className="nav-cta" href="/signup">Get Started <ArrowRight size={15}/></Link>
         </div>
       </nav>

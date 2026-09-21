@@ -1,5 +1,6 @@
-import { Bell, Building2, KeyRound, ShieldCheck, Users } from "lucide-react";
+import { Bell, Building2, KeyRound, ShieldCheck, Users, Wallet } from "lucide-react";
 import { SettingsPanel } from "@/components/live/settings-panel";
+import { WalletPanel } from "@/components/wallet/wallet-panel";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getWorkspace } from "@/lib/auth/workspace";
@@ -17,7 +18,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     <>
       <PageHeader eyebrow="Workspace administration" title="Settings" description="Manage organization access, approvals, notifications, and security controls."/>
       <section className="settings-layout">
-        <nav className="panel settings-nav"><button className="active"><Building2 size={16}/> Organization</button><button><Users size={16}/> Members & roles</button><button><ShieldCheck size={16}/> Approval policies</button><button><Bell size={16}/> Notifications</button><button><KeyRound size={16}/> Security</button></nav>
+        <nav className="panel settings-nav"><a href="#wallet"><Wallet size={16}/> Wallet</a><button className="active"><Building2 size={16}/> Organization</button><button><Users size={16}/> Members & roles</button><button><ShieldCheck size={16}/> Approval policies</button><button><Bell size={16}/> Notifications</button><button><KeyRound size={16}/> Security</button></nav>
+        <div className="settings-stack">
+        <WalletPanel returnPath="/settings" />
         <article className="panel settings-form">
           <div className="panel-title-row"><div><span className="panel-kicker">Organization profile</span><h3>Acme Holdings</h3></div><StatusBadge tone="neutral">Sample workspace</StatusBadge></div>
           <label>Organization name<input defaultValue="Acme Holdings"/></label>
@@ -26,6 +29,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <div className="approval-policy"><ShieldCheck size={19}/><div><strong>Human approval is required</strong><p>Claims cannot be submitted and vendor account changes cannot be made without an authorized reviewer.</p></div><StatusBadge tone="good">Enforced</StatusBadge></div>
           <button className="primary-button">Save changes</button>
         </article>
+        </div>
       </section>
     </>
   );
