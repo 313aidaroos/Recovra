@@ -1,4 +1,4 @@
-import { Building2, KeyRound, ShieldCheck, Users } from "lucide-react";
+import { Building2, KeyRound, ShieldCheck, Users, Wallet } from "lucide-react";
 import type { LiveWorkspace } from "@/lib/auth/workspace";
 import type { MemberListItem } from "@/lib/db/resources";
 import { formatDate, formatMoney } from "@/lib/format";
@@ -6,6 +6,7 @@ import { ADMIN_ROLES, APPROVER_ROLES, WRITER_ROLES } from "@/types/workspace";
 import { PageHeader } from "../ui/page-header";
 import { StatusBadge } from "../ui/status-badge";
 import { FormStatus } from "../auth/form-status";
+import { WalletPanel } from "../wallet/wallet-panel";
 import { AddMemberForm, ChangePasswordForm, OrganizationForm } from "./settings-forms";
 
 export function SettingsPanel({ workspace, members, savedMessage = null }: { workspace: LiveWorkspace; members: MemberListItem[]; savedMessage?: string | null }) {
@@ -17,12 +18,14 @@ export function SettingsPanel({ workspace, members, savedMessage = null }: { wor
       <PageHeader eyebrow="Workspace administration" title="Settings" description="Organization profile, members, roles and the approval controls enforced on every recovery."/>
       <section className="settings-layout">
         <nav className="panel settings-nav">
+          <a href="#wallet"><Wallet size={16}/> Wallet</a>
           <a className="active" href="#organization"><Building2 size={16}/> Organization</a>
           <a href="#members"><Users size={16}/> Members & roles</a>
           <a href="#approvals"><ShieldCheck size={16}/> Approval policies</a>
           <a href="#security"><KeyRound size={16}/> Security</a>
         </nav>
         <div className="settings-stack">
+          <WalletPanel returnPath="/settings" />
           <article className="panel settings-form" id="organization">
             <div className="panel-title-row"><div><span className="panel-kicker">Organization profile</span><h3>{organization.name}</h3></div><StatusBadge tone="good">Live workspace</StatusBadge></div>
             {savedMessage && <FormStatus state={{ message: savedMessage }}/>}

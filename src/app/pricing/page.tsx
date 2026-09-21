@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Check, Wallet } from "lucide-react";
 import { Brand } from "@/components/brand";
+import { BuyIxisLink } from "@/components/wallet/buy-ixis-link";
 import { RedeemButton } from "@/components/wallet/redeem-button";
 
 const plans = [
@@ -12,14 +13,27 @@ const plans = [
 export default function PricingPage() {
   return (
     <main className="pricing-page">
-      <nav className="marketing-nav"><Brand/><Link href="/">Back to platform</Link><Link className="nav-cta" href="/dashboard">Get Started <ArrowRight size={15}/></Link></nav>
+      <nav className="marketing-nav">
+        <Brand/>
+        <div className="marketing-links">
+          <Link href="/">Platform</Link>
+          <BuyIxisLink returnPath="/pricing" label="Wallet" />
+        </div>
+        <div className="marketing-actions">
+          <Link href="/dashboard">Get Started</Link>
+          <BuyIxisLink returnPath="/pricing" className="nav-cta" icon />
+        </div>
+      </nav>
       <section className="pricing-hero">
         <span className="eyebrow">Ixis-based pricing</span>
         <h1>Start with proof. Scale with recovery.</h1>
         <p>Pay with Ixis points from your Apixis Wallet. 100 Ixis = $1. Paid Ixis never expires.</p>
+        <div className="pricing-buy">
+          <BuyIxisLink returnPath="/pricing" className="primary-cta" icon />
+        </div>
         <div className="pricing-note">
           <Wallet size={16}/>
-          <span>Buy Ixis in <a href="https://apixis-wallet.vercel.app" target="_blank" rel="noopener">Apixis Wallet</a> and redeem inside Recovra.</span>
+          <span>Cash is charged only in Apixis Wallet. Return here to redeem a plan. Recovra does not run card checkout for Ixis.</span>
         </div>
       </section>
       <section className="pricing-grid">
