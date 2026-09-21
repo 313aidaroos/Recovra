@@ -44,7 +44,7 @@ export default function PricingPage() {
                 Talk to Sales <ArrowRight size={15}/>
               </Link>
             ) : (
-              <RedeemButton planName={name} ixisAmount={parseInt(ixisPrice || "0", 10)} />
+              <RedeemButton planName={name} ixisAmount={parseInt((ixisPrice || "0").replace(/,/g, ""), 10)} />
             )}
             <ul>{features.map(feature=><li key={feature}><Check size={15}/>{feature}</li>)}</ul>
           </article>
