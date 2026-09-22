@@ -27,6 +27,12 @@ export default async function SupportQueuePage() {
   if (!supabase) redirect("/support");
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) redirect("/login?next=/support/queue");
+  
+  // SECURITY: Support queue is owner-only
+  const OWNER_EMAIL = "awad@apixis.dev";
+  if (auth.user.email?.toLowerCase().trim() !== OWNER_EMAIL) {
+    redirect("/dashboard");
+  }
 
   const { data, error } = await supabase
     .from("support_requests")
