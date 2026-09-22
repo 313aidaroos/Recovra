@@ -28,9 +28,15 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
       return { status: "error", message: "Invalid plan or amount." };
     }
 
-    // Product key must match ApixisWallet catalog exactly
-    const productKey = "recovery-intelligence-seat"; // 22,000 Ixis/mo
-    
+    // Product keys must match ApixisWallet lib/catalog.ts exactly (verified live 2026-09-22).
+    const PRODUCT_KEYS: Record<string, { key: string; plan: "starter" | "growth" }> = {
+      Starter: { key: "recovra.intel.monthly", plan: "starter" },
+      Growth: { key: "recovra.intel.growth", plan: "growth" },
+    };
+    const sku = PRODUCT_KEYS[planName];
+    if (!sku) return { status: "error", message: "That plan can't be redeemed yet — contact us for Enterprise." };
+    const productKey = sku.key;
+
     // Unique idempotency key per attempt (include timestamp)
     const idempotencyKey = `recovra-${workspace.organization.id}-${planName}-${Date.now()}`;
 
@@ -39,8 +45,15 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
       productKey,
       idempotencyKey,
       provision: async (reservation) => {
-        // TODO: Store entitlement in Recovra DB
-        // For now, just return the reservation as proof
+        // Record the plan on the org while the Ixis are held. RLS-only project: goes through
+        // grant_plan_entitlement (SECURITY DEFINER, member-checked). Throwing here releases the hold.
+        const { error } = await workspace.supabase.rpc("grant_plan_entitlement", {
+          p_org: workspace.organization.id,
+          p_plan: sku.plan,
+          p_product_key: productKey,
+          p_receipt: reservation.reservationId,
+        });
+        if (error) throw new Error(`Could not record plan: ${error.message}`);
         return { subscribed: true, reservationId: reservation.reservationId };
       },
     });
@@ -62,8 +75,8 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
   } catch (err) {
     console.error("Ixis redeem error:", err);
     if (err instanceof WalletError) {
-      return { status: "error", message: err.message };
+      return { status: "error", message: `Wallet: ${err.message}` };
     }
-    return { status: "error", message: "Failed to process redemption. Try again later." };
+    return { status: "error", message: err instanceof Error ? err.message : "Failed to process redemption. Nothing was charged." };
   }
 }
