@@ -75,12 +75,17 @@ export async function sendMagicLinkAction(_previous: AuthFormState, formData: Fo
   const email = String(formData.get("email") ?? "").trim();
   if (!email) return { error: "Enter your email." };
   const origin = await siteOrigin();
+  const rawNext = String(formData.get("next") ?? "/dashboard");
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/dashboard";
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: magicLinkRedirect(origin, safeNextPath(formData.get("next"))) },
+    options: { 
+      shouldCreateUser: true,
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(`/set-password?next=${encodeURIComponent(next)}`)}`,
+    },
   });
   if (error) return { error: error.message };
-  return { message: "Magic link sent. Open the email on this device to sign in. If the link does not open this site, sign in with your password instead." };
+  return { message: `Check ${email} — the sign-in link is on its way. First time? You will choose a password after it opens.` };
 }
 
 export async function changePasswordAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -93,6 +98,21 @@ export async function changePasswordAction(_previous: AuthFormState, formData: F
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: error.message };
   return { message: "Password updated. Use it the next time you sign in." };
+}
+
+/** Called from /set-password after a magic-link sign-in. FAMILY STANDARD. */
+export async function setPasswordAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const supabase = await createServerSupabase();
+  if (!supabase) return { error: "Authentication is not configured." };
+  const password = String(formData.get("password") ?? "");
+  const rawNext = String(formData.get("next") ?? "/dashboard");
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/dashboard";
+  if (password.length < 10) return { error: "Password must be at least 10 characters." };
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Your sign-in link expired. Request a new one." };
+  const { error } = await supabase.auth.updateUser({ password, data: { password_set: true } });
+  if (error) return { error: error.message };
+  redirect(next);
 }
 
 export async function signOutAction() {
