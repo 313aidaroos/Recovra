@@ -1,6 +1,7 @@
 import type { WalletReturnPath } from "@/lib/wallet/embed";
 import { StatusBadge } from "../ui/status-badge";
 import { BuyIxisLink } from "./buy-ixis-link";
+import { ApixisWalletChip } from "@/components/ApixisWalletChip";
 
 export function WalletPanel({ returnPath }: { returnPath: WalletReturnPath }) {
   return (
@@ -14,7 +15,7 @@ export function WalletPanel({ returnPath }: { returnPath: WalletReturnPath }) {
       </div>
       <p className="muted-note">Ixis is purchased in Apixis Wallet. Card charges and the cash credit happen there. Recovra only redeems Ixis against a plan.</p>
       <BuyIxisLink returnPath={returnPath} className="primary-button" icon />
-      <p className="muted-note">Balance stays on Apixis Wallet until a signed-in Wallet session can be read here. Recovra does not invent a balance.</p>
+      <p className="muted-note">Your Apixis Wallet (shared by every Apixis site): <ApixisWalletChip /></p>
     </article>
   );
 }

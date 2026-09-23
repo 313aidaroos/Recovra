@@ -38,3 +38,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Apixis family (shared login + shared Wallet)
+Read [`docs/APIXIS_FAMILY.md`](docs/APIXIS_FAMILY.md) before touching auth, Ixis or billing. One Ixis balance lives in Apixis Wallet; this site never keeps its own.
