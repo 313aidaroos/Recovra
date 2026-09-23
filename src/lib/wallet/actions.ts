@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase/server";
+import { createServiceSupabase } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 
 import { requireLiveWorkspace } from "@/lib/auth/workspace";
@@ -59,15 +60,22 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
       return { status: "error", message: "Invalid attempt ID." };
     }
 
+    // Plan grants are server-only (service role). Without the key, stop before touching the Wallet.
+    const service = createServiceSupabase();
+    if (!service) {
+      return { status: "error", message: "Plan activation is not configured yet (server key missing). Nothing was charged." };
+    }
+
     const result = await redeem({
       ownerEmail,
       productKey,
       idempotencyKey,
       provision: async (reservation) => {
-        // Record the plan on the org while the Ixis are held. RLS-only project: goes through
-        // grant_plan_entitlement (SECURITY DEFINER, member-checked). Throwing here releases the hold.
-        const { error } = await workspace.supabase.rpc("grant_plan_entitlement", {
+        // Record the plan on the org while the Ixis are held. Server-only function (service role):
+        // members cannot grant themselves a plan. Throwing here releases the hold.
+        const { error } = await service.rpc("grant_plan_entitlement_as_service", {
           p_org: workspace.organization.id,
+          p_user: workspace.user.id,
           p_plan: sku.plan,
           p_product_key: productKey,
           p_receipt: reservation.reservationId,
@@ -76,10 +84,11 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
         return { org: workspace.organization.id, subscribed: true, reservationId: reservation.reservationId };
       },
       // BILLING HARDENING 3b: unprovision callback — if capture fails after provision, undo the access grant
-      unprovision: async (_reservation, result) => {
-        // Delete the plan_entitlements row via SECURITY DEFINER function
-        const { error } = await workspace.supabase.rpc("revoke_plan_entitlement", {
+      unprovision: async (reservation, result) => {
+        // Remove only the grant made with this reservation (server-only function).
+        const { error } = await service.rpc("revoke_plan_entitlement_as_service", {
           p_org: result.org,
+          p_receipt: reservation.reservationId,
         });
         if (error) {
           console.error("Failed to unprovision after capture failure:", error);
