@@ -1,6 +1,7 @@
+"use server";
+
 import { createServerSupabase } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-"use server";
 
 import { requireLiveWorkspace } from "@/lib/auth/workspace";
 import { redeem, buyIxisUrl, WalletError } from "@/lib/apixis-wallet";
