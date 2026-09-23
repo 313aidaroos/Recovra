@@ -1,3 +1,5 @@
+import { createServerSupabase } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 "use server";
 
 import { requireLiveWorkspace } from "@/lib/auth/workspace";
@@ -15,6 +17,16 @@ export interface WalletRedeemState {
  * Uses the shared Wallet client: reserve → provision → capture (with unprovision on capture failure).
  */
 export async function redeemIxisAction(_previous: WalletRedeemState, formData: FormData): Promise<WalletRedeemState> {
+  // Family sign-in standard: a signed-out click on a gated button goes to /login?next=<here>,
+  // and the magic link brings the user back to this exact page. Auth check runs before anything else.
+  {
+    const supabase = await createServerSupabase();
+    const { data: { user } = { user: null } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+    if (!user) {
+      const next = String(formData.get("next") ?? "/pricing");
+      redirect(`/login?next=${encodeURIComponent(next.startsWith("/") && !next.startsWith("//") ? next : "/pricing")}`);
+    }
+  }
   try {
     const workspace = await requireLiveWorkspace();
     const ownerEmail = workspace.user.email;

@@ -16,6 +16,7 @@ export function RedeemButton({ planName, ixisAmount }: RedeemButtonProps) {
     <form action={action} className="redeem-form">
       <input type="hidden" name="plan" value={planName} />
       <input type="hidden" name="ixis_amount" value={ixisAmount} />
+      <input type="hidden" name="next" value="/pricing" />
       
       <button type="submit" disabled={pending} className="redeem-button">
         {pending ? "Processing…" : `Redeem · ${ixisAmount.toLocaleString()} Ixis`} <ArrowRight size={15}/>
