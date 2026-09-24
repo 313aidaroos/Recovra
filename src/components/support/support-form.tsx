@@ -11,17 +11,11 @@ const initial: SupportFormState = {};
 export function SupportForm() {
   const [state, action, pending] = useActionState(createSupportRequestAction, initial);
   
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // Let the server action handle it via form action attribute
-    // But log that we're submitting
-    console.log('[SupportForm] Submitting form', { pending, state });
-  };
-  
   return (
     <section className="support-grid">
       <article className="panel upload-panel">
         <div className="panel-title-row"><div><span className="panel-kicker">Support intake</span><h3>Ask Recovra support</h3></div><LifeBuoy size={20}/></div>
-        <form action={action} onSubmit={handleSubmit} className="workflow-form">
+        <form action={action} className="workflow-form">
           <label className="field-label">Name<input name="name" required placeholder="Your name"/></label>
           <label className="field-label">Work email<input name="email" type="email" required placeholder="you@company.com"/></label>
           <label className="field-label">Company <small>optional</small><input name="company" placeholder="Company name"/></label>
