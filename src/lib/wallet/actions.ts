@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { requireLiveWorkspace } from "@/lib/auth/workspace";
 import { redeem, buyIxisUrl, WalletError } from "@/lib/apixis-wallet";
 import { randomBytes } from "crypto";
+import { apixisOwner } from "@/lib/apixis-login";
+import { createServiceSupabase } from "@/lib/supabase/service";
 
 export interface WalletRedeemState {
   status?: "success" | "insufficient" | "error";
@@ -60,14 +62,17 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
     }
 
     const result = await redeem({
-      ownerEmail,
+      owner: (await apixisOwner(ownerEmail)) ?? ownerEmail,
       productKey,
       idempotencyKey,
       provision: async (reservation) => {
-        // Record the plan on the org while the Ixis are held. RLS-only project: goes through
-        // grant_plan_entitlement (SECURITY DEFINER, member-checked). Throwing here releases the hold.
-        const { error } = await workspace.supabase.rpc("grant_plan_entitlement", {
+        // Record the plan on the org while the Ixis are held. Server-only (service role): customers
+        // can no longer grant themselves a plan. Throwing here releases the hold.
+        const service = createServiceSupabase();
+        if (!service) throw new Error("Plan activation is not configured (SUPABASE_SERVICE_ROLE_KEY).");
+        const { error } = await service.rpc("grant_plan_entitlement_for", {
           p_org: workspace.organization.id,
+          p_user: workspace.user.id,
           p_plan: sku.plan,
           p_product_key: productKey,
           p_receipt: reservation.reservationId,
