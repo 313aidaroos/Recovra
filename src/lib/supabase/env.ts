@@ -1,3 +1,4 @@
+// Change note (Claude, Sep 2026): Reads the service key. See docs/LAUNCH_NOTES.md.
 // Only publishable (browser-safe) credentials live here. RLS enforces tenant isolation.
 // The single exception is recording a paid plan after a Wallet hold, which uses
 // SUPABASE_SERVICE_ROLE_KEY on the server (lib/supabase/service.ts).

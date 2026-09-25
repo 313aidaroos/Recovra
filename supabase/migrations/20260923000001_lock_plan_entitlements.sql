@@ -1,3 +1,4 @@
+-- Change note (Claude, Sep 2026): Grant/revoke plan are service-role only (users could give themselves paid plans). See docs/LAUNCH_NOTES.md.
 -- SECURITY: grant_plan_entitlement was executable by every signed-in user and only checked org
 -- membership. Anyone could create an org (create_organization) and grant it a paid plan with an
 -- invented receipt, without paying. Plan grants now happen only on the server, after the
