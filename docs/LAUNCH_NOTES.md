@@ -28,6 +28,8 @@ App `recovra`. Sells `recovra.intel.monthly`, `recovra.intel.growth`.
 
 ## What changed, file by file
 
+Each changed backend code file also starts with a one-line `Change note (Claude, Sep 2026)` comment saying the same thing.
+
 | File | Change |
 |---|---|
 | `.env.example` | Added 13 key(s) the code reads that were missing: `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `WALLET_API_KEY`, `APIXIS_WALLET_API_URL`, `NEXT_PUBLIC_GOVERNING_LAW`, `NEXT_PUBLIC_LEGAL_ADDRESS`, `NEXT_PUBLIC_LEGAL_EMAIL`, `NEXT_PUBLIC_LEGAL_ENTITY`, `OPENAI_API_KEY`, `RECOVRA_AI_MODEL`, `RECOVRA_FORCE_DEMO`, `APIXIS_WALLET_API_KEY`. |

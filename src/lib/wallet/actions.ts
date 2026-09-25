@@ -1,4 +1,5 @@
 "use server";
+// Change note (Claude, Sep 2026): Calls the service-only grant/revoke. See docs/LAUNCH_NOTES.md.
 
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createServiceSupabase } from "@/lib/supabase/service";
