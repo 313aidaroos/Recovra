@@ -1,5 +1,6 @@
-// Only publishable (browser-safe) credentials live here. RLS enforces tenant isolation,
-// so the application never needs a service-role key.
+// Only publishable (browser-safe) credentials live here. RLS enforces tenant isolation.
+// The single exception is recording a paid plan after a Wallet hold, which uses
+// SUPABASE_SERVICE_ROLE_KEY on the server (lib/supabase/service.ts).
 //
 // The production project's URL and publishable key are committed as defaults so a fresh
 // deployment is live without any dashboard configuration. Environment variables override
