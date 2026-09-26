@@ -32,8 +32,10 @@ Each changed backend code file also starts with a one-line `Change note (Claude,
 
 | File | Change |
 |---|---|
-| `.env.example` | Added 13 key(s) the code reads that were missing: `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `WALLET_API_KEY`, `APIXIS_WALLET_API_URL`, `NEXT_PUBLIC_GOVERNING_LAW`, `NEXT_PUBLIC_LEGAL_ADDRESS`, `NEXT_PUBLIC_LEGAL_EMAIL`, `NEXT_PUBLIC_LEGAL_ENTITY`, `OPENAI_API_KEY`, `RECOVRA_AI_MODEL`, `RECOVRA_FORCE_DEMO`, `APIXIS_WALLET_API_KEY`. |
+| `.env.example` | Added 14 key(s) the code reads that were missing: `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `WALLET_API_KEY`, `APIXIS_WALLET_API_URL`, `NEXT_PUBLIC_GOVERNING_LAW`, `NEXT_PUBLIC_LEGAL_ADDRESS`, `NEXT_PUBLIC_LEGAL_EMAIL`, `NEXT_PUBLIC_LEGAL_ENTITY`, `OPENAI_API_KEY`, `RECOVRA_AI_MODEL`, `RECOVRA_FORCE_DEMO`, `ANTHROPIC_MODEL`, `APIXIS_WALLET_API_KEY`. |
 | `docs/LAUNCH_NOTES.md` | This file. |
+| `src/app/api/cixy/message/route.ts` | Part of: Replace the retired Claude model so Cixy doesn't fail. |
+| `src/app/api/health/route.ts` | Part of: Replace the retired Claude model so Cixy doesn't fail. |
 | `src/lib/supabase/env.ts` | Reads the service key. |
 | `src/lib/supabase/service.ts` | New. Server-only Supabase client. |
 | `src/lib/wallet/actions.ts` | Calls the service-only grant/revoke. |
