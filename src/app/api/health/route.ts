@@ -1,3 +1,4 @@
+// Change note (Claude, Sep 2026): Retired claude-3-5-sonnet replaced; model is ANTHROPIC_MODEL or claude-sonnet-5. See docs/LAUNCH_NOTES.md.
 import { NextResponse } from "next/server";
 import { isPdfExtractionConfigured } from "@/lib/ingestion/pdf-extractor";
 import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
@@ -51,7 +52,7 @@ export async function GET() {
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "content-type": "application/json", "x-api-key": anthropicKey, "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model: "claude-3-5-sonnet-20241022", max_tokens: 1, messages: [{ role: "user", content: "ping" }] }),
+        body: JSON.stringify({ model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5", max_tokens: 1, messages: [{ role: "user", content: "ping" }] }),
         cache: "no-store", signal: AbortSignal.timeout(10000),
       });
       checks.anthropic = { ok: response.ok, latencyMs: Date.now() - began, detail: response.ok ? undefined : `API returned ${response.status}` };

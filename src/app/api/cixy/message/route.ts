@@ -1,4 +1,5 @@
 "use server";
+// Change note (Claude, Sep 2026): Retired claude-3-5-sonnet replaced; model is ANTHROPIC_MODEL or claude-sonnet-5. See docs/LAUNCH_NOTES.md.
 
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getWorkspace } from "@/lib/auth/workspace";
@@ -60,7 +61,7 @@ export async function POST(req: Request): Promise<Response> {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-20241022",
+        model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
         max_tokens: 1024,
         system: systemPrompt,
         messages: [
