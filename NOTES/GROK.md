@@ -6,3 +6,9 @@ Grok Bot (Developer Bot hub + product leads) notes. Every change Grok Bot makes 
 - Vercel env: replaced `WALLET_API_KEY` with a per-product `apx_live_` key, added `APIXIS_CLIENT_ID=recovra`, and left legacy `APIXIS_WALLET_API_KEY` present (name-only check); production was redeployed from the same product commit.
 - Cleanup status: the attempted deletion of legacy `APIXIS_WALLET_API_KEY` variables was stopped at about 22:45 CT; no deletion was made here.
 - Undo: restore `WALLET_API_KEY` to its legacy value and deactivate the `recovra` client row.
+
+## 2026-09-27 — Balance pill rollout: Recovra left unmerged (Grok Bot)
+- **What:** No code changed. Awad approved the header Wallet balance pill on all products; Recovra's version was to build on Claude's open PR #4 (Apixis ID + shared Wallet).
+- **Why stopped:** bringing main into #4 conflicts in payment/entitlement code: `src/lib/wallet/actions.ts` (main uses `grant_plan_entitlement_as_service`, #4 uses `grant_plan_entitlement_for`) and `src/lib/supabase/service.ts`. #4 also adds migration `20260923000001_plan_entitlement_service_only.sql`, which main has replaced with `20260923000001_lock_plan_entitlements.sql`. These are competing payment implementations, so they can't be resolved cleanly on the product-display side.
+- **Next:** Claude rebases #4 onto main (keep main's entitlement code and migration), then add the balance pill; or a balance-only PR once Awad OKs it.
+- **Undo:** nothing to undo.
