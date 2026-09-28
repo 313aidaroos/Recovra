@@ -68,10 +68,13 @@ export async function GET() {
     const began = Date.now();
     try {
       const walletUrl = process.env.APIXIS_WALLET_API_URL ?? "https://apixis-wallet.vercel.app";
-      const response = await fetch(`${walletUrl}/api/v1/health`, {
-        headers: { authorization: `Bearer ${process.env.WALLET_API_KEY}` }, cache: "no-store", signal: AbortSignal.timeout(5000),
+      // Wallet has no /health route. GET /api/v1/entitlements?app=recovra with our service key and no
+      // owner is a harmless read that proves the API is up and the key is accepted (401/403 = bad key).
+      const response = await fetch(`${walletUrl.replace(/\/$/, "")}/api/v1/entitlements?app=recovra`, {
+        headers: { authorization: `Bearer ${process.env.WALLET_API_KEY ?? process.env.APIXIS_WALLET_API_KEY}` }, cache: "no-store", signal: AbortSignal.timeout(5000),
       });
-      checks.wallet = { ok: response.ok, latencyMs: Date.now() - began, detail: response.ok ? undefined : `API returned ${response.status}` };
+      const reachable = response.status < 500 && response.status !== 401 && response.status !== 403;
+      checks.wallet = { ok: reachable, latencyMs: Date.now() - began, detail: reachable ? undefined : `API returned ${response.status}` };
     } catch (error) {
       checks.wallet = { ok: false, latencyMs: Date.now() - began, detail: error instanceof Error ? error.message : "unreachable" };
     }

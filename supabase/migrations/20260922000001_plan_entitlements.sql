@@ -1,4 +1,4 @@
--- 0008_plan_entitlements.sql
+-- 20260922000001_plan_entitlements.sql (renamed from 0008 on 2026-09-27 so it runs after core_schema on a fresh push)
 -- Cache of the Apixis Wallet entitlement (Wallet is the source of truth; written only by the
 -- server after a successful capture). Lets pages gate on plan without a Wallet round-trip.
 create table if not exists public.plan_entitlements (
