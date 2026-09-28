@@ -1,4 +1,4 @@
--- 0009_grant_plan_entitlement.sql
+-- 20260922000002_grant_plan_entitlement.sql (renamed from 0009 on 2026-09-27). The member grant made here is revoked by 20260923000001_lock_plan_entitlements.sql.
 -- Recovra ships no service-role key by design (RLS-only). The redeem Server Action runs as the
 -- signed-in member, so the entitlement write goes through this SECURITY DEFINER function:
 -- caller must be a member of the org; the row is upserted with the receipt from the Wallet capture.

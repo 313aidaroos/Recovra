@@ -1,8 +1,9 @@
 # Supabase Setup
 
 Recovra's MVP database lives in the Supabase project `recovra` (region us-east-1). The
-application talks to it **only** with the publishable key; row-level security enforces
-tenant isolation, so no service-role key is deployed anywhere.
+application uses the publishable key for everything a user does; row-level security enforces
+tenant isolation. The one exception is recording a paid plan after a Wallet hold, which runs on
+the server with `SUPABASE_SERVICE_ROLE_KEY` (`src/lib/supabase/service.ts`, server only).
 
 ## Migrations (applied, in order)
 
@@ -15,6 +16,10 @@ tenant isolation, so no service-role key is deployed anywhere.
 | `migrations/20260912000005_discard_failed_document_release.sql` | Follow-up release of discard_failed_document. |
 | `migrations/20260916000001_demo_audit_runs.sql` | Labeled public demo audit table + `upsert_demo_audit_run` RPC. Isolated from tenant tables. `claims_sent` constrained to false. |
 | `migrations/20260916000002_auth_owner_support.sql` | Owner bootstrap for `awad@apixis.dev`, magic-link-safe auth support, and public support queue routed from `recovra@apixis.dev` to `awad@apixis.dev`. |
+| `migrations/20260922000001_plan_entitlements.sql` | `plan_entitlements` cache of the Apixis Wallet entitlement (read-only to members). Renamed from `0008`. |
+| `migrations/20260922000002_grant_plan_entitlement.sql` | Original member-callable grant RPC; its member access is revoked by `20260923000001`. Renamed from `0009`. |
+| `migrations/20260922000003_active_plan_check.sql` | `has_active_plan(org)`: plan exists and has not expired. Renamed from `0011`. |
+| `migrations/20260923000001_lock_plan_entitlements.sql` | Plan grant/revoke are `service_role` only (`grant_plan_entitlement_as_service`, `revoke_plan_entitlement_as_service`). |
 
 Apply new migrations with the Supabase CLI (`supabase db push`) or the dashboard SQL editor.
 Never edit an applied migration; add a new timestamped file.
