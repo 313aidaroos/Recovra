@@ -12,6 +12,7 @@ import {
   FileBarChart,
   FileStack,
   Gauge,
+  Globe2,
   Layers3,
   LogIn,
   LogOut,
@@ -27,6 +28,7 @@ import {
 import { signOutAction, switchOrganizationAction } from "@/lib/auth/actions";
 import { BuyIxisLink } from "@/components/wallet/buy-ixis-link";
 import { Brand } from "./brand";
+import { enterApixisUrl } from "@/lib/apixis-world";
 
 export type ShellNotification = { id: string; title: string; body: string; href: string; tone: "info" | "warn" | "risk" };
 
@@ -106,6 +108,7 @@ export function AppShell({ children, workspace }: { children: React.ReactNode; w
       <div className="sidebar-bottom">
         <Link href="/documents" className="nav-item"><CircleHelp size={18}/><span>Getting started</span></Link>
         <BuyIxisLink returnPath="/dashboard" className="nav-item" icon label="Buy Ixis" />
+        <a href={enterApixisUrl("recovra")} className="nav-item"><Globe2 size={18}/><span>Apixis World ↗</span></a>
         <Link href="/settings" className={`nav-item ${path.startsWith("/settings") ? "active" : ""}`}><Settings2 size={18}/><span>Settings</span></Link>
         {live ? (
           <div className="workspace-card interactive">
