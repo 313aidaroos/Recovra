@@ -38,3 +38,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## AI change log (owner's standing rule)
+Any AI model, bot, or agent that changes anything in this repo must append a dated entry to AI_CHANGELOG.md (what changed + why). No exceptions.
