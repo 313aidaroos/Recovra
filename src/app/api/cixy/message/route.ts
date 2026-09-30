@@ -4,6 +4,7 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getWorkspace } from "@/lib/auth/workspace";
 import { getCixySystemPrompt } from "@/lib/cixy/prompt";
+import { cixyUnavailableReply } from "@/lib/apixis-cixy";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
@@ -76,7 +77,9 @@ export async function POST(req: Request): Promise<Response> {
     if (!response.ok) {
       const error = await response.text();
       console.error("Anthropic API error:", response.status, error);
-      return new Response(JSON.stringify({ error: "AI service error" }), { status: 500 });
+      // Out of credit, rate limited or down: a calm sentence, never the vendor's error.
+      const fallback = cixyUnavailableReply(response.status);
+      return new Response(JSON.stringify({ error: fallback.reply, reply: fallback.reply, code: "cixy_unavailable" }), { status: fallback.status });
     }
 
     const data = (await response.json()) as {
