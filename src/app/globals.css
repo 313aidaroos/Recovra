@@ -103,3 +103,4 @@ tr.selected-row td{background:rgba(121,226,167,.06)}
 .wallet-top-link{height:36px;padding:0 12px;white-space:nowrap;text-decoration:none}
 .wallet-inline{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-weight:800}
 .nav-item svg{flex:none}
+.marketing footer.ixis-companies{border-top:0;padding-top:0;justify-content:flex-start;gap:16px;flex-wrap:wrap}.marketing footer.ixis-companies nav{flex-wrap:wrap}

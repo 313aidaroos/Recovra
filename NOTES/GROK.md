@@ -18,3 +18,9 @@ Grok Bot (Developer Bot hub + product leads) notes. Every change Grok Bot makes 
 - Where: `src/app/api/apixis/world-agent/route.ts`, `src/components/apixis-world-welcome.tsx`, `src/lib/apixis-world.ts`, `src/lib/apixis-world-provision.ts`, `src/lib/apixis-world-agent.ts`, `src/lib/apixis-world-agent.test.ts`, `src/app/(platform)/dashboard/page.tsx`, `src/components/app-shell.tsx`, `public/cixy/cixy-combo-a-avatar.webp`, `.env.example`.
 - Not touched: login/signup pages, Wallet pill/balance route, Stripe/payments, existing accounts.
 - Undo: revert the PR's squash commit; optionally remove Vercel env `APIXIS_WORLD_KEY` (the route then does nothing). Agents already created stay in Apixis.dev `apixis.agents`.
+
+## 2026-09-29 (CT) — Grok Recovra Lead: "Other Ixis companies" footer
+- What: added an "Other Ixis companies" row directly under the existing homepage footer, with plain text links (new tab, `rel="noopener noreferrer"`) to the 13 approved Ixis sites. Recovra is left out, as are Nexxis/Omnixis, Launchixis, PersonalContentBot, AwadBot and COMMAND. It reuses the existing `.marketing footer` look; the only new CSS is one rule that lets the row wrap and removes its top border and padding so it sits under the footer.
+- Where: `src/lib/ixis-companies.ts` (the one list; swap URLs here when custom domains arrive), `src/components/ixis-companies-footer.tsx`, `src/app/page.tsx`, `src/app/globals.css`.
+- Not touched: existing footer links, other pages, env, database, deploys. PR opened with a Vercel preview only; not merged.
+- Undo: revert the PR's commit (or delete the `<IxisCompaniesFooter />` line in `src/app/page.tsx`).
