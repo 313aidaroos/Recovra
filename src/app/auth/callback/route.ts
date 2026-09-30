@@ -30,14 +30,16 @@ export async function GET(request: NextRequest) {
   }
 
   // Implicit flow token_hash (magic link)
-  if (tokenHash && type) {
+  if (tokenHash) {
+    // Use type: "email" to accept both signup and magiclink tokens (GoTrue mints signup for new addresses, magiclink for existing)
+    const verifyType = (type === "recovery" || type === "invite" || type === "email_change") ? type : "email";
     const { error } = await supabase.auth.verifyOtp({ 
       token_hash: tokenHash, 
-      type: type as "signup" | "magiclink" | "recovery" | "email_change" 
+      type: verifyType as "email" | "recovery" | "invite" | "email_change"
     });
     if (error) {
       console.error("OTP verify failed:", error);
-      return NextResponse.redirect(`${origin}/login?error=link_invalid`);
+      return NextResponse.redirect(`${origin}/login?error=link_expired`);
     }
     return NextResponse.redirect(`${origin}${next}`);
   }
