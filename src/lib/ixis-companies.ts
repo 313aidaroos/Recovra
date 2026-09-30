@@ -12,7 +12,5 @@ export const otherIxisCompanies = [
   { name: "Halaxis", url: "https://halaxis.vercel.app" },
   { name: "Deduxis", url: "https://deduxis.vercel.app" },
   { name: "Geoxis", url: "https://spatial-dashboard-xi.vercel.app" },
-  { name: "Qahwah World", url: "https://qahwahworld.vercel.app" },
-  { name: "Nursery Toons", url: "https://nurserytoons.vercel.app" },
   { name: "Wattixis", url: "https://wattixis.vercel.app" },
 ] as const;
