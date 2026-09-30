@@ -1,3 +1,4 @@
+import { safeNextPath } from "@/lib/auth/redirects";
 import type { Metadata } from "next";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -6,7 +7,7 @@ export const metadata: Metadata = { title: "Sign in · Recovra" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const params = await searchParams;
-  const next = params.next && params.next.startsWith("/") ? params.next : "/dashboard";
+  const next = safeNextPath(params.next ?? null);
   const initialError = params.error === "link_invalid" ? "That sign-in link is invalid or expired. Request a new one." : undefined;
 
   return (

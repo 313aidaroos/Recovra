@@ -42,3 +42,9 @@ describe("authCallbackTarget", () => {
     expect(authCallbackTarget(new URLSearchParams("token_hash=th&type=weird"))).toEqual({ kind: "error", reason: "link_invalid" });
   });
 });
+
+it("rejects encoded and backslash redirect escapes", () => {
+  for (const path of ["/\\evil.example", "/%5cevil.example", "/%252f%252fevil.example"]) {
+    expect(safeNextPath(path)).toBe("/dashboard");
+  }
+});

@@ -15,6 +15,7 @@ export function SignInForm({ next, initialError }: { next: string; initialError?
 
   return (
     <>
+      <a className="primary-button wide" href={`/auth/apixis/start?next=${encodeURIComponent(next)}`}>Sign in with Apixis</a>
       {/* Tab switcher */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16, borderBottom: "1px solid #272e36" }}>
         <button

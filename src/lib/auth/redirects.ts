@@ -1,10 +1,11 @@
+import { safeLocalRedirect } from "../apixis-redirect";
 export const OWNER_EMAIL = "awad@apixis.dev";
 
 const OTP_TYPES = new Set(["signup", "magiclink", "recovery", "email_change"]);
 
 export function safeNextPath(value: FormDataEntryValue | string | null, fallback = "/dashboard") {
   const next = typeof value === "string" ? value : "";
-  return next.startsWith("/") && !next.startsWith("//") ? next : fallback;
+  return safeLocalRedirect(next, fallback);
 }
 
 export function magicLinkRedirect(origin: string, next: string | null | undefined = "/dashboard") {

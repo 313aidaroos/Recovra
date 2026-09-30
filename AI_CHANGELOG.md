@@ -19,3 +19,13 @@ Entry format:
 ## 2026-09-28 — JunoAI
 - Changed: Added .github/workflows/ci.yml — thin caller of the shared reusable workflow 313aidaroos/github-actions/.github/workflows/node-ci.yml@main (checkout → Node 20 → npm ci → lint/typecheck/test/build).
 - Why: Standardize CI across repos via the shared reusable workflow.
+
+## 2026-09-30 — Codex — Tester readiness: paid activation and login safety
+
+- Updated the Wallet SDK from the canonical v3 source; paid access is now activated only after confirmed capture, so a failed capture cannot delete an earlier paid period.
+- Added a service-only receipt journal and idempotent activation RPC; restricted purchases to verified users with billing roles and persisted each purchase attempt for safe retries.
+- Reused the canonical redirect validator in local auth. Health no longer treats unauthorized email credentials as working and reports missing plan activation configuration.
+- No styling or pricing changes. Migration and controlled verification must precede enabling plan activation.
+
+- Added the missing Apixis sign-in start/callback routes using the canonical helper and connected the login form to them. The Wallet registry already contains the production callback.
+- Verification: 65 tests, TypeScript and production build passed before adding shared-login routes; receipt replay/renewal/permission SQL checks passed with all fixtures rolled back. New receipt journal is intentionally server-only (RLS enabled, no client policies or grants).
