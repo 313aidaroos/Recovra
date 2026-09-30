@@ -7,7 +7,8 @@ import { redirect } from "next/navigation";
 
 import { requireLiveWorkspace } from "@/lib/auth/workspace";
 import { redeem, buyIxisUrl, WalletError } from "@/lib/apixis-wallet";
-import { randomBytes } from "crypto";
+import { createHash } from "node:crypto";
+import { safeNextPath } from "@/lib/auth/redirects";
 
 export interface WalletRedeemState {
   status?: "success" | "insufficient" | "error";
@@ -17,30 +18,25 @@ export interface WalletRedeemState {
 
 /**
  * Redeem Ixis for Recovra plan subscription.
- * Uses the shared Wallet client: reserve → provision → capture (with unprovision on capture failure).
+ * Uses the shared Wallet client: reserve → confirm capture → idempotent plan activation.
  */
 export async function redeemIxisAction(_previous: WalletRedeemState, formData: FormData): Promise<WalletRedeemState> {
   // Family sign-in standard: a signed-out click on a gated button goes to /login?next=<here>,
   // and the magic link brings the user back to this exact page. Auth check runs before anything else.
-  {
-    const supabase = await createServerSupabase();
-    const { data: { user } = { user: null } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
-    if (!user) {
-      const next = String(formData.get("next") ?? "/pricing");
-      redirect(`/login?next=${encodeURIComponent(next.startsWith("/") && !next.startsWith("//") ? next : "/pricing")}`);
-    }
-  }
+  const supabase = await createServerSupabase();
+  const { data: { user } = { user: null } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  if (!user) redirect(`/login?next=${encodeURIComponent(safeNextPath(formData.get("next"), "/pricing"))}`);
+  if (!user.email || !user.email_confirmed_at) return { status: "error", message: "Verify your email before redeeming Ixis." };
   try {
-    const workspace = await requireLiveWorkspace();
+    const workspace = await requireLiveWorkspace(["owner", "admin", "finance"]);
     const ownerEmail = workspace.user.email;
     if (!ownerEmail) {
       return { status: "error", message: "No verified email on your account." };
     }
 
     const planName = String(formData.get("plan") ?? "").trim();
-    const ixisAmount = parseInt(String(formData.get("ixis_amount") ?? "0"), 10);
 
-    if (!planName || ixisAmount <= 0) {
+    if (!planName) {
       return { status: "error", message: "Invalid plan or amount." };
     }
 
@@ -55,9 +51,9 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
 
     // BILLING HARDENING 3a: Idempotency key = user + product + client-generated attemptId per click.
     // NOT Date.now(). Under 80 chars, no email in it.
-    const attemptId = String(formData.get("attemptId") ?? randomBytes(8).toString("hex"));
-    const idempotencyKey = `recovra-${workspace.organization.id.slice(0, 8)}-${sku.plan}-${attemptId}`;
-    if (idempotencyKey.length > 80) {
+    const attemptId = String(formData.get("attemptId") ?? "");
+    const idempotencyKey = `recovra-${createHash("sha256").update(`${workspace.organization.id}:${sku.plan}:${attemptId}`).digest("hex")}`;
+    if (!/^[a-zA-Z0-9-]{16,64}$/.test(attemptId)) {
       return { status: "error", message: "Invalid attempt ID." };
     }
 
@@ -68,34 +64,13 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
     }
 
     const result = await redeem({
-      ownerEmail,
+      owner: typeof user.app_metadata?.apixis_sub === "string" ? user.app_metadata.apixis_sub : ownerEmail,
       productKey,
       idempotencyKey,
-      provision: async (reservation) => {
-        // Record the plan on the org while the Ixis are held. Server-only function (service role):
-        // members cannot grant themselves a plan. Throwing here releases the hold.
-        const { error } = await service.rpc("grant_plan_entitlement_as_service", {
-          p_org: workspace.organization.id,
-          p_user: workspace.user.id,
-          p_plan: sku.plan,
-          p_product_key: productKey,
-          p_receipt: reservation.reservationId,
-        });
-        if (error) throw new Error(`Could not record plan: ${error.message}`);
-        return { org: workspace.organization.id, subscribed: true, reservationId: reservation.reservationId };
-      },
-      // BILLING HARDENING 3b: unprovision callback — if capture fails after provision, undo the access grant
-      unprovision: async (reservation, result) => {
-        // Remove only the grant made with this reservation (server-only function).
-        const { error } = await service.rpc("revoke_plan_entitlement_as_service", {
-          p_org: result.org,
-          p_receipt: reservation.reservationId,
-        });
-        if (error) {
-          console.error("Failed to unprovision after capture failure:", error);
-          // Log but don't throw — we already released the hold
-        }
-      },
+      // No paid access is changed until capture is confirmed. Replays reuse the
+      // same reservation and the activation RPC records each receipt only once.
+      provision: async (reservation) => reservation.reservationId,
+
     });
 
     if (!result.ok) {
@@ -108,6 +83,18 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
       };
     }
 
+    const { error: activationError } = await service.rpc("activate_paid_plan_as_service", {
+      p_org: workspace.organization.id,
+      p_user: workspace.user.id,
+      p_plan: sku.plan,
+      p_product_key: productKey,
+      p_receipt: result.result,
+    });
+    if (activationError) {
+      console.error("Paid plan activation needs retry", { reservationId: result.result, code: activationError.code });
+      return { status: "error", message: "Payment was confirmed, but plan activation needs a retry. Use this same button again; this purchase will not be charged twice." };
+    }
+
     return {
       status: "success",
       message: `${planName} plan activated! Receipt: ${result.receiptId}`,
@@ -115,8 +102,8 @@ export async function redeemIxisAction(_previous: WalletRedeemState, formData: F
   } catch (err) {
     console.error("Ixis redeem error:", err);
     if (err instanceof WalletError) {
-      return { status: "error", message: `Wallet: ${err.message}` };
+      return { status: "error", message: "The Wallet could not confirm the purchase. Retry this same purchase to check its status; do not start another payment." };
     }
-    return { status: "error", message: err instanceof Error ? err.message : "Failed to process redemption. Nothing was charged." };
+    return { status: "error", message: "The purchase could not be completed. Retry this same purchase to check its status." };
   }
 }

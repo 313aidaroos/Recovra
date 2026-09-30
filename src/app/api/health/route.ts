@@ -61,6 +61,8 @@ export async function GET() {
     }
   }
 
+  checks.planActivation = { ok: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY), detail: process.env.SUPABASE_SERVICE_ROLE_KEY ? undefined : "server key not configured" };
+
   // Wallet API
   if (!isWalletConfigured()) {
     checks.wallet = { ok: false, detail: "key not configured" };
@@ -90,7 +92,7 @@ export async function GET() {
       const response = await fetch("https://api.resend.com/emails", {
         method: "GET", headers: { authorization: `Bearer ${resendKey}` }, cache: "no-store", signal: AbortSignal.timeout(5000),
       });
-      checks.resend = { ok: response.ok || response.status === 401, latencyMs: Date.now() - began, detail: (response.ok || response.status === 401) ? undefined : `API returned ${response.status}` };
+      checks.resend = { ok: response.ok, latencyMs: Date.now() - began, detail: (response.ok) ? undefined : `API returned ${response.status}` };
     } catch (error) {
       checks.resend = { ok: false, latencyMs: Date.now() - began, detail: error instanceof Error ? error.message : "unreachable" };
     }

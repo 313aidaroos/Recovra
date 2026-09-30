@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 import { ArrowRight } from "lucide-react";
-import { redeemIxisAction } from "@/lib/wallet/actions";
+import { redeemIxisAction, type WalletRedeemState } from "@/lib/wallet/actions";
 
 export interface RedeemButtonProps {
   planName: string;
@@ -10,7 +10,21 @@ export interface RedeemButtonProps {
 }
 
 export function RedeemButton({ planName, ixisAmount }: RedeemButtonProps) {
-  const [state, action, pending] = useActionState(redeemIxisAction, {});
+  const attempt = useRef("");
+  const [state, action, pending] = useActionState(async (previous: WalletRedeemState, form: FormData) => {
+    const key = `recovra-purchase:${planName}`;
+    if (!attempt.current) {
+      try { attempt.current = sessionStorage.getItem(key) || ""; } catch { /* optional storage */ }
+      if (!/^[a-zA-Z0-9-]{16,64}$/.test(attempt.current)) attempt.current = crypto.randomUUID();
+      try { sessionStorage.setItem(key, attempt.current); } catch { /* retry still uses the ref */ }
+    }
+    form.set("attemptId", attempt.current);
+    const result = await redeemIxisAction(previous, form);
+    if (result.status === "success") {
+      try { sessionStorage.removeItem(key); } catch { /* optional storage */ }
+    }
+    return result;
+  }, {});
 
   return (
     <form action={action} className="redeem-form">
@@ -18,7 +32,7 @@ export function RedeemButton({ planName, ixisAmount }: RedeemButtonProps) {
       <input type="hidden" name="ixis_amount" value={ixisAmount} />
       <input type="hidden" name="next" value="/pricing" />
       
-      <button type="submit" disabled={pending} className="redeem-button">
+      <button type="submit" disabled={pending || state.status === "success"} className="redeem-button">
         {pending ? "Processing…" : `Redeem · ${ixisAmount.toLocaleString()} Ixis`} <ArrowRight size={15}/>
       </button>
 
