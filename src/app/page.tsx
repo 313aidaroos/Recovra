@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { BuyIxisLink } from "@/components/wallet/buy-ixis-link";
+import { IxisCompaniesFooter } from "@/components/ixis-companies-footer";
 
 const categoryRecoveries = [
   ["Logistics", "$2,418,320"],
@@ -117,6 +118,7 @@ export default function Home() {
       </section>
 
       <footer id="resources"><Brand/><p>Find overcharges. Recover savings. Control spend.</p><nav><Link href="/audit">Sample audit</Link><Link href="/support">Support</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/pricing">Pricing</Link><BuyIxisLink returnPath="/pricing" label="Wallet" /><Link href="/login">Sign in</Link></nav><span>© 2026 Recovra</span></footer>
+      <IxisCompaniesFooter />
     </main>
   );
 }
