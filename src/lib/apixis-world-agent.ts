@@ -4,7 +4,7 @@
  *
  * Right after a new account exists (first signed-in app load after signup / first Apixis ID sign-in),
  * the product's SERVER asks Apixis.dev to create that person's own world agent (default Apixis body,
- * customizable hair/outfit/colors, 200 in-world Ixis once) via lib/apixis-world-provision.ts, then
+ * customizable hair/outfit/colors, 1000 in-world Ixis once) via lib/apixis-world-provision.ts, then
  * records it on the user (Supabase: app_metadata.apixis_world_agent_at / _id / _name) so later loads
  * skip the call. Apixis.dev is idempotent by verified email, so a retry never creates a second agent
  * or a second grant. The app then shows the one-time "Your agent is ready" card until the person
@@ -70,9 +70,15 @@ export function worldAgentView(user: WorldAgentUser, rolloutAt = WORLD_AGENT_ROL
   };
 }
 
-/** Should the server call Apixis.dev for this user now? Only new, verified accounts without the flag. */
+/**
+ * Should the server call Apixis.dev for this user now? Verified accounts without the flag that are
+ * either new (created after the rollout) or signing in with Apixis ID (first Apixis sign-in on an
+ * older account, 2026-09-29 one-account brief). Apixis.dev dedupes by Apixis ID / verified email,
+ * so an Apixis ID that already has an agent from another site gets that same agent back.
+ */
 export function needsProvision(user: WorldAgentUser, rolloutAt = WORLD_AGENT_ROLLOUT_AT): boolean {
-  return !str(meta(user).apixis_world_agent_at) && isNewAccount(user, rolloutAt) && hasVerifiedEmail(user);
+  if (str(meta(user).apixis_world_agent_at) || !hasVerifiedEmail(user)) return false;
+  return isNewAccount(user, rolloutAt) || Boolean(str(meta(user).apixis_sub));
 }
 
 export type EnsureDeps = {

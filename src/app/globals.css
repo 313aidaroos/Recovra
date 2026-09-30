@@ -103,3 +103,6 @@ tr.selected-row td{background:rgba(121,226,167,.06)}
 .wallet-top-link{height:36px;padding:0 12px;white-space:nowrap;text-decoration:none}
 .wallet-inline{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-weight:800}
 .nav-item svg{flex:none}
+/* Apixis Wallet balance pill + Log in with Apixis ID (Grok Recovra Lead, 2026-09-29) */
+.wallet-pill-group{display:inline-flex;align-items:center;gap:8px}.wallet-pill{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid rgba(121,226,167,.3);background:rgba(121,226,167,.07);color:var(--green);border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap;text-decoration:none}.wallet-pill:hover{background:rgba(121,226,167,.13)}.wallet-pill-link{font-size:11px;color:#8ea59a;white-space:nowrap;text-decoration:underline;text-underline-offset:3px}.apixis-login .muted-note{justify-content:center;text-align:center}.apixis-login .auth-divider{margin:14px 0 16px}.world-agent-link{display:inline-flex;align-items:center;gap:8px;margin:0 0 18px;padding:8px 14px;border:1px solid #2c5a44;border-radius:999px;background:#0e1b16;color:var(--green);font-size:12px;font-weight:700;text-decoration:none}.world-agent-link:hover{background:#10251c}
+@media(max-width:760px){.wallet-pill-link{display:none}.wallet-pill{height:32px;padding:0 10px;font-size:11px}}

@@ -169,3 +169,54 @@ export function buyIxisUrl(product: string, returnUrl: string): string {
   u.searchParams.set("return_url", returnUrl);
   return u.toString();
 }
+
+// ---------------------------------------------------------------- Apixis ID + shared balance
+// Grok Recovra Lead, 2026-09-29: ADDITIVE port of the three SDK v3 calls Recovra needs for
+// "Log in with Apixis ID" and the header balance pill (same code as Renoxis lib/apixis-wallet.ts and
+// Claude's PR #4). reserve/capture/release/redeem above are main's and deliberately unchanged.
+
+/** Apixis ID `sub` (UUID, saved at Apixis sign-in) or a verified email. */
+export type Owner = string;
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function ownerQuery(owner: Owner): string {
+  owner = owner.trim();
+  return UUID.test(owner) ? `owner_id=${encodeURIComponent(owner)}` : `owner_email=${encodeURIComponent(owner)}`;
+}
+
+export type WalletBalance = {
+  currency: "Ixis";
+  available: number;
+  paid: number;
+  bonus: number;
+  reserved: number;
+  usd: number;
+  history: { id: string; kind: string; description: string; app: string | null; productKey: string | null; amount: number; createdAt: string }[];
+};
+
+/**
+ * The person's ONE family balance, for the header pill. With a per-site key this only works for
+ * people who signed in to this site with Apixis ID (403/404 otherwise).
+ */
+export async function walletBalance(owner: Owner, options: { history?: number } = {}): Promise<WalletBalance> {
+  return call<WalletBalance>("GET", `/api/v1/balance?${ownerQuery(owner)}&history=${Math.max(0, Math.min(options.history ?? 0, 50))}`);
+}
+
+/**
+ * Where to send the browser to sign in. `state` = a random value you also put in an httpOnly cookie;
+ * `redirectUri` must be registered for your client exactly (the Wallet lead registers it).
+ */
+export function apixisLoginUrl(opts: { state: string; redirectUri: string; clientId?: string }): string {
+  const clientId = opts.clientId ?? process.env.APIXIS_CLIENT_ID ?? "";
+  const u = new URL(`${BASE}/sso/authorize`);
+  u.searchParams.set("client_id", clientId);
+  u.searchParams.set("redirect_uri", opts.redirectUri);
+  u.searchParams.set("state", opts.state);
+  return u.toString();
+}
+
+/** Server-side, in the callback: trade the one-time `code` for who signed in. Single use. */
+export async function exchangeLoginCode(code: string, redirectUri: string): Promise<{ sub: string; email: string; email_verified: true }> {
+  return call("POST", "/api/sso/token", { code, redirect_uri: redirectUri });
+}

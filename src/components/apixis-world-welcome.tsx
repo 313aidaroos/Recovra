@@ -30,7 +30,15 @@ export function ApixisWorldWelcome() {
       .catch(() => {});
     return () => { cancelled = true; };
   }, []);
-  if (!view?.showWelcome) return null;
+  if (!view) return null;
+  if (!view.showWelcome) {
+    // After the one-time card: a small standing link once the agent exists (2026-09-29, one-account brief).
+    return view.status === "ready" ? (
+      <a className="world-agent-link" href={view.enterUrl} data-state="ready">
+        <Sparkles size={14} aria-hidden /> Your agent{view.agentName ? ` ${view.agentName}` : ""} is in the Apixis world ↗
+      </a>
+    ) : null;
+  }
   const ready = view.status === "ready";
   return (
     <section
@@ -51,7 +59,7 @@ export function ApixisWorldWelcome() {
         <div style={{ flex: "1 1 320px", minWidth: 0 }}>
           <span className="eyebrow"><Sparkles size={14} /> {ready ? "Apixis world · your agent is ready" : "Apixis world · your own agent"}</span>
           <h2 id="rv-agent-title" style={{ fontSize: 24, letterSpacing: "-1px", margin: "9px 0 6px", color: "var(--text)" }}>
-            {ready ? "Your agent is ready. Enter the Apixis world." : "Your own agent is waiting in the Apixis world."}
+            {ready ? "Your agent is in the Apixis world." : "Your own agent is waiting in the Apixis world."}
           </h2>
           <p style={{ margin: 0, color: "#778d82", fontSize: 13, lineHeight: 1.6, maxWidth: 680 }}>
             {ready
@@ -60,7 +68,7 @@ export function ApixisWorldWelcome() {
           </p>
           <ul aria-label="Your agent" style={{ listStyle: "none", padding: 0, margin: "14px 0 0", display: "flex", flexWrap: "wrap", gap: 8 }}>
             <li style={{ ...chip, background: "var(--green)", color: "var(--ink)", borderColor: "var(--green)" }}>✦ {ready && view.agentName ? view.agentName : "Your agent"}</li>
-            <li style={chip}>200 in-world Ixis to start</li>
+            <li style={chip}>1000 in-world Ixis to start</li>
             <li style={chip}>Sign in with Apixis ID</li>
           </ul>
         </div>

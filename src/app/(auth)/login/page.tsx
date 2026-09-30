@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { SignInWithApixis } from "@/components/SignInWithApixis";
 
 export const metadata: Metadata = { title: "Sign in · Recovra" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const params = await searchParams;
   const next = params.next && params.next.startsWith("/") ? params.next : "/dashboard";
-  const initialError = params.error === "link_invalid" ? "That sign-in link is invalid or expired. Request a new one." : undefined;
+  const initialError = params.error === "link_invalid"
+    ? "That sign-in link is invalid or expired. Request a new one."
+    : params.error === "apixis_not_configured"
+      ? "Log in with Apixis ID isn't available on this deployment yet. Use your Recovra email below."
+      : params.error
+        ? "Sign-in didn't finish. Try Log in with Apixis ID again, or use your Recovra email below."
+        : undefined;
 
   return (
     <>
       <header className="auth-card-head"><span className="eyebrow">Welcome back</span><h2>Sign in to your workspace</h2></header>
       {isSupabaseConfigured()
-        ? <SignInForm next={next} initialError={initialError}/>
+        ? <><SignInWithApixis next={next}/><SignInForm next={next} initialError={initialError}/></>
         : <p className="form-status error">Authentication is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.</p>}
     </>
   );
