@@ -60,7 +60,7 @@ export function ApixisWorldWelcome() {
           </p>
           <ul aria-label="Your agent" style={{ listStyle: "none", padding: 0, margin: "14px 0 0", display: "flex", flexWrap: "wrap", gap: 8 }}>
             <li style={{ ...chip, background: "var(--green)", color: "var(--ink)", borderColor: "var(--green)" }}>✦ {ready && view.agentName ? view.agentName : "Your agent"}</li>
-            <li style={chip}>200 in-world Ixis to start</li>
+            <li style={chip}>1,000 in-world Ixis to start</li>
             <li style={chip}>Sign in with Apixis ID</li>
           </ul>
         </div>
