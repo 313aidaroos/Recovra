@@ -38,3 +38,7 @@ Entry format:
 ## 2026-09-30 (night pass) — Claude
 - Changed: Cixy prompt now starts with the shared family core from `lib/apixis-cixy` (copied from `ApixisWallet/sdk/apixis-cixy`); only the product role stays site-specific. Greeting policy is the family rule (match the person, never open with salaam). Provider failures (no key, out of credit, 429, 5xx) answer `cixyUnavailableReply()` — a calm sentence with HTTP 503/429, never the vendor error. `src/lib/cixy/prompt.test.ts` still passes.
 - Why: Awad's overnight instruction — all backend and security done, one Cixy persona everywhere (ApixisWallet/docs/CIXY.md, sdk/apixis-cixy.*), agents on the same page (ApixisWallet/docs/FAMILY_STATUS.md).
+
+## 2026-10-02 — Claude (Claude Code)
+- Changed: `.env.example` now lists every env var the code reads (missing names appended with a one-line note each).
+- Why: so the owner can add keys in Vercel from one complete list. No code changed.
