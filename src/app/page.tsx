@@ -47,7 +47,7 @@ export default function Home() {
       <nav className="marketing-nav">
         <Brand/>
         <div className="marketing-links">
-          <Link href="/audit">Sample audit</Link><a href="#platform">Platform</a><a href="#industries">Industries</a><a href="#how">How It Works</a><Link href="/support">Support</Link><Link href="/pricing">Pricing</Link><BuyIxisLink returnPath="/pricing" label="Wallet" />
+          <Link href="/audit">Sample audit</Link><a href="#platform">Platform</a><a href="#industries">Industries</a><a href="#how">How It Works</a><Link href="/support">Support</Link><Link href="/companies">Apixis Companies</Link><Link href="/pricing">Pricing</Link><BuyIxisLink returnPath="/pricing" label="Wallet" />
         </div>
         <div className="marketing-actions"><Link href="/login">Login</Link><BuyIxisLink returnPath="/pricing" className="wallet-inline" icon /><Link className="nav-cta" href="/signup">Get Started <ArrowRight size={15}/></Link></div>
       </nav>
