@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Brand } from "@/components/brand";
 import type { CSSProperties } from "react";
-import type { CSSProperties } from "react";
 import "./companies.css";
 
 const companies = [
@@ -22,7 +21,7 @@ const companies = [
   { name: "Wattixis", description: "Energy commerce connecting producers, buyers, storage operators, and project partners.", kind: "energy", color: "#f4c65b", path: "M27 5 12 27h12l-3 16 17-24H26z" },
 ];
 
-export function CompaniesDirectory({ host }: { host: string }) {
+function CompaniesDirectory({ host }: { host: string }) {
   return (
     <section className="ix-family" data-host={host} aria-labelledby="ix-family-title">
       <div className="ix-family-inner">
