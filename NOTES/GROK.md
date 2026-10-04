@@ -1,11 +1,19 @@
-## 2026-10-04 summary
+Grok Bot (Developer Bot hub + product leads) notes. Every change Grok Bot makes to this product (code, env, database, deploys) gets a dated entry here so Claude, Hermes and Codex stay on the same page.
+
 ## 2026-10-04 summary
 
 - **Grok:** added the two-owner admin allowlist and verified-owner plan bypass.
-- **Lead:** prepared a Feed preview; it was not merged.
-- **Claude/Hermes/Codex/Juno:** Claude, Hermes, and Juno had no commits or merged PRs in this repo on 2026-10-04 CT.
+- **Lead:** prepared a Feed preview and reviewed Claude's notes; the preview was not merged.
+- **Claude:** merged PR #25 (`12e9366`) around 6:30 PM CT, adding the full-portfolio review to `NOTES/CLAUDE.md` and `AI_CHANGELOG.md` (notes/docs only).
+- **Hermes:** no 2026-10-04 commit or merged PR identified in this repository.
+- **Juno:** no 2026-10-04 commit or merged PR identified in this repository.
 
+## Catch-up correction — 2026-10-04 (CT)
 
+Claude activity was present; the earlier “no Claude activity” line was incorrect. Each item below has an undo pointer.
+
+- **Claude, 2026-10-04 6:31 PM CT — PR #25, merge `12e9366ee5ff5e3ec6bfc236447375fa65ac3f66`:** notes: Claude full-portfolio review 2026-10-04 (NOTES/CLAUDE.md, AI_CHANGELOG); added `NOTES/CLAUDE.md` and `AI_CHANGELOG.md` (notes/docs only). Undo: `git revert 12e9366ee5ff5e3ec6bfc236447375fa65ac3f66`.
+- **2026-10-04 6:45 PM CT — 313aidaroos:** `notes: Recovra Lead review of Claude 10/4 work (notes only) [skip ci]` landed as `2f55d5041b2f72c032361018f75861ad1d84bdb3`. Where: commit `2f55d5041b2f72c032361018f75861ad1d84bdb3`. Undo: `git revert 2f55d5041b2f72c032361018f75861ad1d84bdb3`.
 
 ## 2026-09-27 (CT) — Developer Bot (hub)
 - Wallet registration: added `recovra` to `wallet_api_clients` in Supabase project `kzneeksminozmhnqaaun`, with `require_sso=false`.
