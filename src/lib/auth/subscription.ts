@@ -5,12 +5,22 @@
 
 import { getWorkspace } from "./workspace";
 import { redirect } from "next/navigation";
+import { isProvenOwner } from "./owner";
 
 export async function requireActiveSubscription() {
   const workspace = await getWorkspace();
   
   // Demo mode = always allowed (no subscription needed)
   if (workspace.mode !== "live") {
+    return workspace;
+  }
+
+  // Owner bypass: a session-proven owner email skips the plan gate. No billing row, no Wallet call.
+  const [{ data: authData }, { data: sessionData }] = await Promise.all([
+    workspace.supabase.auth.getUser(),
+    workspace.supabase.auth.getSession(),
+  ]);
+  if (isProvenOwner(authData?.user, sessionData?.session?.access_token)) {
     return workspace;
   }
 

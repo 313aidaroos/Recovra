@@ -43,3 +43,11 @@ Read-only backfill made at Awad's request; this commit touches only this file. T
 - Needs Awad: the migration is NOT applied to prod yet (no SQL access from this session). Until it is, alaidaroosawad@gmail.com passes the app check but the DB still refuses the bootstrap and shows an empty queue; awad@apixis.dev works as before. Apply it with Supabase MCP `apply_migration` or the SQL editor.
 - Who: Grok.
 - Undo: `git revert <squash SHA>`, delete `ADMIN_EMAILS` in Vercel → recovra → Settings → Environment Variables; DB: re-run the function and the two policies from `20260916000002_auth_owner_support.sql`.
+
+## 2026-10-04 — Owner bypass for the plan gate; owner migration applied (Grok)
+- Applied: supabase/migrations/20261004230000_owner_admin_emails.sql was applied to prod ewvgpfufzeyzyutjxuoh via the Supabase MCP. Verified that the owner function includes alaidaroosawad@gmail.com and the 2 support policies were updated.
+- What: requireActiveSubscription() (the /documents upload/audit gate) is skipped for a session-proven owner: a confirmed owner email (alaidaroosawad@gmail.com, awad@apixis.dev, plus ADMIN_EMAILS) AND an email-proving sign-in (magic link/OTP, Apixis ID/OAuth, recovery). A password-only session never gets the bypass. This is a product gate only: no subscription row, no Wallet call. Real Wallet purchases still work as normal.
+- Found: Recovra auth has alaidaroosawad@gmail.com created and confirmed at the same instant (2026-09-12, password), so it is possibly auto-confirmed. Not touched.
+- Where: src/lib/auth/owner.ts (amrProvesEmail, isProvenOwner), src/lib/auth/subscription.ts, and tests in src/lib/auth/owner.test.ts.
+- Who: Grok.
+- Undo: revert this PR.
