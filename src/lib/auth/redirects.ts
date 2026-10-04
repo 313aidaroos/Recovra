@@ -1,5 +1,7 @@
 import { safeLocalRedirect } from "../apixis-redirect";
 export const OWNER_EMAIL = "awad@apixis.dev";
+// Owner admin allowlist (Awad's rule, 2026-10-04 Grok): both owner emails. ADMIN_EMAILS (Vercel env) adds more.
+export const OWNER_ADMIN_EMAILS = ["alaidaroosawad@gmail.com", "awad@apixis.dev"] as const;
 
 const OTP_TYPES = new Set(["signup", "magiclink", "recovery", "email_change"]);
 

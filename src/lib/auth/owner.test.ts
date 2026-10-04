@@ -35,3 +35,11 @@ describe("ensureOwnerWorkspace", () => {
     expect(result).toEqual({ attempted: false });
   });
 });
+
+describe("owner admin allowlist", () => {
+  it("recognizes both owner emails case-insensitively", () => {
+    expect(isRecovraOwnerEmail("ALAIDAROOSAWAD@gmail.com")).toBe(true);
+    expect(isRecovraOwnerEmail(" awad@apixis.dev")).toBe(true);
+    expect(isRecovraOwnerEmail("")).toBe(false);
+  });
+});
