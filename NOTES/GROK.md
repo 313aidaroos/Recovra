@@ -43,3 +43,11 @@ Read-only backfill made at Awad's request; this commit touches only this file. T
 - Needs Awad: the migration is NOT applied to prod yet (no SQL access from this session). Until it is, alaidaroosawad@gmail.com passes the app check but the DB still refuses the bootstrap and shows an empty queue; awad@apixis.dev works as before. Apply it with Supabase MCP `apply_migration` or the SQL editor.
 - Who: Grok.
 - Undo: `git revert <squash SHA>`, delete `ADMIN_EMAILS` in Vercel → recovra → Settings → Environment Variables; DB: re-run the function and the two policies from `20260916000002_auth_owner_support.sql`.
+
+## 2026-10-04 (CT) — Grok Bot: Feed tab on Recovra (PR open, NOT merged)
+- Why: Awad asked for the Socixis Social family feed as a Feed tab on every Ixis site. Awad put feed changes on hold, so this PR is for preview review only; do not merge until Awad says so.
+- What: new public `/feed` page in Recovra's own shell (same header, footer, fonts, colors and buttons). For You is the unfiltered mixed feed from every Apixis company with source-site badges and AI labels; Following, Search · Trending and You tabs; video/photo/text posts, like, comment, follow, save, share, report, tips and boosts in Ixis. Signed-out visitors can browse; the 4th tab says "You" and shows a sign-in card (Apixis ID). Text-only posts use the site's body font, wrap long words and size to their content; media posts keep the full-height layout; feed modals sit above everything.
+- Where: `src/app/feed/` (page with the home page's own marketing nav + footer, Recovra skin, `feed.css` mapped to Recovra tokens), `src/feed-client/` (shared client), `src/app/api/feed-session/route.ts`, "Feed" link in the home nav (`src/app/page.tsx`), lint override scoped to `src/feed-client/**` in `eslint.config.mjs`, `src/lib/feed-client.test.ts`.
+- Backend: https://www.apixis.dev/api/feed. `/api/feed-session` calls POST /api/feed/session server-side with the existing `APIXIS_WORLD_KEY` + X-Apixis-Client/Sub/Email and returns the short-lived fdt_ token. No new env vars, no DB change, no SVGs.
+- Who: Grok Bot (for Awad).
+- Undo: close this PR, or `git revert <squash sha>` if it is ever merged.
