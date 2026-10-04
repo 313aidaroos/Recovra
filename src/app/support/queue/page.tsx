@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Brand } from "@/components/brand";
 import { formatDateTime } from "@/lib/format";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { isRecovraOwnerEmail } from "@/lib/auth/owner";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Support queue · Recovra" };
@@ -29,8 +30,7 @@ export default async function SupportQueuePage() {
   if (!auth.user) redirect("/login?next=/support/queue");
   
   // SECURITY: Support queue is owner-only
-  const OWNER_EMAIL = "awad@apixis.dev";
-  if (auth.user.email?.toLowerCase().trim() !== OWNER_EMAIL) {
+  if (!isRecovraOwnerEmail(auth.user.email) || !auth.user.email_confirmed_at) {
     redirect("/dashboard");
   }
 
