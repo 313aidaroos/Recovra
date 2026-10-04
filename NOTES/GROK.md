@@ -1,4 +1,11 @@
-Grok Bot (Developer Bot hub + product leads) notes. Every change Grok Bot makes to this product (code, env, database, deploys) gets a dated entry here so Claude, Hermes and Codex stay on the same page.
+## 2026-10-04 summary
+## 2026-10-04 summary
+
+- **Grok:** added the two-owner admin allowlist and verified-owner plan bypass.
+- **Lead:** prepared a Feed preview; it was not merged.
+- **Claude/Hermes/Codex/Juno:** Claude, Hermes, and Juno had no commits or merged PRs in this repo on 2026-10-04 CT.
+
+
 
 ## 2026-09-27 (CT) — Developer Bot (hub)
 - Wallet registration: added `recovra` to `wallet_api_clients` in Supabase project `kzneeksminozmhnqaaun`, with `require_sso=false`.
@@ -51,3 +58,15 @@ Read-only backfill made at Awad's request; this commit touches only this file. T
 - Where: src/lib/auth/owner.ts (amrProvesEmail, isProvenOwner), src/lib/auth/subscription.ts, and tests in src/lib/auth/owner.test.ts.
 - Who: Grok.
 - Undo: revert this PR.
+## 2026-10-04 catch-up provenance (CT)
+
+The entries below record the day's observed commits and merged PRs. Existing detailed entries above remain the change descriptions; this section supplies exact provenance and undo pointers.
+
+### Commits
+- `8fe86ef` (2026-10-04T18:14:42-05:00, 313aidaroos; alaidaroosawad@gmail.com) — Owner bypass for plan gate (session-proven owner only); NOTES: owner migration applied (#23). Undo: undo via the merged PR below: git revert 8fe86ef.
+- `dc7d1a1` (2026-10-04T17:47:38-05:00, 313aidaroos; alaidaroosawad@gmail.com) — Owner admin allowlist: both owner emails own Recovra (app + migration) (#22). Undo: undo via the merged PR below: git revert dc7d1a1.
+- `f84f12c` (2026-10-04T18:17:51-05:00, 313aidaroos; 313aidaroos@users.noreply.github.com) — Feed tab: Socixis Social family feed at /feed (preview only, do not merge). Undo: no main change; close/delete the branch (or revert the branch commit before reuse).
+
+### Merged PRs
+- PR #23, merge `8fe86ef`, `grok/owner-bypass` → `main`, merged 2026-10-04 CT by 313aidaroos: Owner bypass for plan gate (session-proven owner only); NOTES: owner migration applied. Undo: `git revert 8fe86ef`.
+- PR #22, merge `dc7d1a1`, `grok/owner-admin-allowlist` → `main`, merged 2026-10-04 CT by 313aidaroos: Owner admin allowlist for alaidaroosawad@gmail.com and awad@apixis.dev. Undo: `git revert dc7d1a1`.
