@@ -1,5 +1,20 @@
 Grok Bot (Developer Bot hub + product leads) notes. Every change Grok Bot makes to this product (code, env, database, deploys) gets a dated entry here so Claude, Hermes and Codex stay on the same page.
 
+## 2026-10-04 summary
+
+- **Grok:** added the two-owner admin allowlist and verified-owner plan bypass.
+- **Lead:** prepared a Feed preview and reviewed Claude's notes; the preview was not merged.
+- **Claude:** merged PR #25 (`12e9366`) around 6:30 PM CT, adding the full-portfolio review to `NOTES/CLAUDE.md` and `AI_CHANGELOG.md` (notes/docs only).
+- **Hermes:** no 2026-10-04 commit or merged PR identified in this repository.
+- **Juno:** no 2026-10-04 commit or merged PR identified in this repository.
+
+## Catch-up correction — 2026-10-04 (CT)
+
+Claude activity was present; the earlier “no Claude activity” line was incorrect. Each item below has an undo pointer.
+
+- **Claude, 2026-10-04 6:31 PM CT — PR #25, merge `12e9366ee5ff5e3ec6bfc236447375fa65ac3f66`:** notes: Claude full-portfolio review 2026-10-04 (NOTES/CLAUDE.md, AI_CHANGELOG); added `NOTES/CLAUDE.md` and `AI_CHANGELOG.md` (notes/docs only). Undo: `git revert 12e9366ee5ff5e3ec6bfc236447375fa65ac3f66`.
+- **2026-10-04 6:45 PM CT — 313aidaroos:** `notes: Recovra Lead review of Claude 10/4 work (notes only) [skip ci]` landed as `2f55d5041b2f72c032361018f75861ad1d84bdb3`. Where: commit `2f55d5041b2f72c032361018f75861ad1d84bdb3`. Undo: `git revert 2f55d5041b2f72c032361018f75861ad1d84bdb3`.
+
 ## 2026-09-27 (CT) — Developer Bot (hub)
 - Wallet registration: added `recovra` to `wallet_api_clients` in Supabase project `kzneeksminozmhnqaaun`, with `require_sso=false`.
 - Callback URLs registered: https://recovra-three.vercel.app/auth/apixis/callback.
@@ -57,3 +72,33 @@ Read-only backfill made at Awad's request; this commit touches only this file. T
 - Where: feed client `FeedView.tsx` (tab label) and the shared layout section of the site's feed CSS.
 - Who: Grok Bot (for Awad). No merge, no production deploy.
 - Undo: revert this commit on the PR branch.
+## 2026-10-04 — Owner bypass for the plan gate; owner migration applied (Grok)
+- Applied: supabase/migrations/20261004230000_owner_admin_emails.sql was applied to prod ewvgpfufzeyzyutjxuoh via the Supabase MCP. Verified that the owner function includes alaidaroosawad@gmail.com and the 2 support policies were updated.
+- What: requireActiveSubscription() (the /documents upload/audit gate) is skipped for a session-proven owner: a confirmed owner email (alaidaroosawad@gmail.com, awad@apixis.dev, plus ADMIN_EMAILS) AND an email-proving sign-in (magic link/OTP, Apixis ID/OAuth, recovery). A password-only session never gets the bypass. This is a product gate only: no subscription row, no Wallet call. Real Wallet purchases still work as normal.
+- Found: Recovra auth has alaidaroosawad@gmail.com created and confirmed at the same instant (2026-09-12, password), so it is possibly auto-confirmed. Not touched.
+- Where: src/lib/auth/owner.ts (amrProvesEmail, isProvenOwner), src/lib/auth/subscription.ts, and tests in src/lib/auth/owner.test.ts.
+- Who: Grok.
+- Undo: revert this PR.
+## 2026-10-04 catch-up provenance (CT)
+
+The entries below record the day's observed commits and merged PRs. Existing detailed entries above remain the change descriptions; this section supplies exact provenance and undo pointers.
+
+### Commits
+- `8fe86ef` (2026-10-04T18:14:42-05:00, 313aidaroos; alaidaroosawad@gmail.com) — Owner bypass for plan gate (session-proven owner only); NOTES: owner migration applied (#23). Undo: undo via the merged PR below: git revert 8fe86ef.
+- `dc7d1a1` (2026-10-04T17:47:38-05:00, 313aidaroos; alaidaroosawad@gmail.com) — Owner admin allowlist: both owner emails own Recovra (app + migration) (#22). Undo: undo via the merged PR below: git revert dc7d1a1.
+- `f84f12c` (2026-10-04T18:17:51-05:00, 313aidaroos; 313aidaroos@users.noreply.github.com) — Feed tab: Socixis Social family feed at /feed (preview only, do not merge). Undo: no main change; close/delete the branch (or revert the branch commit before reuse).
+
+### Merged PRs
+- PR #23, merge `8fe86ef`, `grok/owner-bypass` → `main`, merged 2026-10-04 CT by 313aidaroos: Owner bypass for plan gate (session-proven owner only); NOTES: owner migration applied. Undo: `git revert 8fe86ef`.
+- PR #22, merge `dc7d1a1`, `grok/owner-admin-allowlist` → `main`, merged 2026-10-04 CT by 313aidaroos: Owner admin allowlist for alaidaroosawad@gmail.com and awad@apixis.dev. Undo: `git revert dc7d1a1`.
+
+## 2026-10-04 6:50 PM (CT): Recovra Lead (Grok) review of Claude's 10/4 work
+- **PR #25 merged 2026-10-04 6:31 PM CT (Claude Code, `claude/great-fermi-6brq7a`, `12e9366`).** Notes only: added `NOTES/CLAUDE.md` (full-portfolio review) and an `AI_CHANGELOG.md` line. No code, env, DB or deploy change. Awad approved it ("okay merge it"). Undo: `git revert 12e9366`.
+- **Checked live by Recovra Lead (read-only):**
+  - Prod `/api/health` is degraded: Supabase, Anthropic and Wallet are ok; Resend still returns 401; plan activation reports "server key not configured" (`SUPABASE_SERVICE_ROLE_KEY` is missing; needs Awad).
+  - `add_organization_member` already requires the caller to be an org owner or admin (`has_org_role`), so Claude's open question is closed and needs no change.
+  - The Ominix link `nexxis-tau.vercel.app` on `/companies` returns 200 and serves Ominix, so it isn't broken; it changes only if Ominix gets a new canonical host.
+  - All 15 `/companies` links return 200.
+  - The homepage has no religious text.
+- **Flagged, not changed:** `/companies` (Codex #20) draws its company icons as inline `<svg>`, and `src/app/icon.svg` is the favicon. If the no-SVG lock covers icons as well as Cixy art, Codex should swap them for real art.
+- Who: Recovra Lead (Grok). This commit touches only this file. Undo: revert this commit.
