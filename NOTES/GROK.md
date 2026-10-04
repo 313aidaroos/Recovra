@@ -70,3 +70,14 @@ The entries below record the day's observed commits and merged PRs. Existing det
 ### Merged PRs
 - PR #23, merge `8fe86ef`, `grok/owner-bypass` → `main`, merged 2026-10-04 CT by 313aidaroos: Owner bypass for plan gate (session-proven owner only); NOTES: owner migration applied. Undo: `git revert 8fe86ef`.
 - PR #22, merge `dc7d1a1`, `grok/owner-admin-allowlist` → `main`, merged 2026-10-04 CT by 313aidaroos: Owner admin allowlist for alaidaroosawad@gmail.com and awad@apixis.dev. Undo: `git revert dc7d1a1`.
+
+## 2026-10-04 6:50 PM (CT): Recovra Lead (Grok) review of Claude's 10/4 work
+- **PR #25 merged 2026-10-04 6:31 PM CT (Claude Code, `claude/great-fermi-6brq7a`, `12e9366`).** Notes only: added `NOTES/CLAUDE.md` (full-portfolio review) and an `AI_CHANGELOG.md` line. No code, env, DB or deploy change. Awad approved it ("okay merge it"). Undo: `git revert 12e9366`.
+- **Checked live by Recovra Lead (read-only):**
+  - Prod `/api/health` is degraded: Supabase, Anthropic and Wallet are ok; Resend still returns 401; plan activation reports "server key not configured" (`SUPABASE_SERVICE_ROLE_KEY` is missing; needs Awad).
+  - `add_organization_member` already requires the caller to be an org owner or admin (`has_org_role`), so Claude's open question is closed and needs no change.
+  - The Ominix link `nexxis-tau.vercel.app` on `/companies` returns 200 and serves Ominix, so it isn't broken; it changes only if Ominix gets a new canonical host.
+  - All 15 `/companies` links return 200.
+  - The homepage has no religious text.
+- **Flagged, not changed:** `/companies` (Codex #20) draws its company icons as inline `<svg>`, and `src/app/icon.svg` is the favicon. If the no-SVG lock covers icons as well as Cixy art, Codex should swap them for real art.
+- Who: Recovra Lead (Grok). This commit touches only this file. Undo: revert this commit.
