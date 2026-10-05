@@ -37,7 +37,7 @@ export function CixyChat({ organizationName }: CixyChatProps) {
       <div className="cixy-conversation">
         {!state.messages || state.messages.length === 0 ? (
           <div className="cixy-welcome">
-            <p className="muted-note">As-salamu alaykum. I&apos;m Cixy, your recovery intelligence specialist. Ask me about overcharge audits, savings recovery, or how to track spend across your vendors.</p>
+            <p className="muted-note">Hello. I&apos;m Cixy, your recovery intelligence specialist. Ask me about overcharge audits, savings recovery, or how to track spend across your vendors.</p>
           </div>
         ) : (
           state.messages.map((msg, idx) => (

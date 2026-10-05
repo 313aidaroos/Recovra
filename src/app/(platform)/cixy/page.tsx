@@ -14,7 +14,7 @@ export default async function CixyPage() {
           <section className="audit-hero">
             <span className="sample-label">Demo mode</span>
             <h1>Sign in to talk to Cixy</h1>
-            <p>As-salamu alaykum. I&apos;m available once you&apos;ve created your organization and workspace.</p>
+            <p>Hello. I&apos;m available once you&apos;ve created your organization and workspace.</p>
           </section>
         </section>
       </main>

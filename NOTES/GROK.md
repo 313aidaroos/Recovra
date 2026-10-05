@@ -102,3 +102,10 @@ The entries below record the day's observed commits and merged PRs. Existing det
   - The homepage has no religious text.
 - **Flagged, not changed:** `/companies` (Codex #20) draws its company icons as inline `<svg>`, and `src/app/icon.svg` is the favicon. If the no-SVG lock covers icons as well as Cixy art, Codex should swap them for real art.
 - Who: Recovra Lead (Grok). This commit touches only this file. Undo: revert this commit.
+
+## 2026-10-04 (CT) — Grok (Developer Bot hub): Cixy persona v2 sync + Ominix link
+- What: src/lib/apixis-cixy.ts: replaced the v1 Cixy kit (Muslim identity, Salam/Insha'Allah lines, halal 'clean recommendations') with v2. Product role: removed halal-conscious/haram/fatwa line, 'NOT A SCHOLAR' block and 'open with salaam' (now plain hello); chat welcome + /cixy placeholder say 'Hello'. Tests updated + religious-terms guard. Ominix link on /companies now https://ominix-app.vercel.app (URL string only; no SVG/design change).
+- Files: src/app/(platform)/cixy/page.tsx src/app/companies/page.tsx src/components/cixy/chat.tsx src/lib/apixis-cixy.ts src/lib/cixy/prompt.test.ts src/lib/cixy/prompt.ts 
+- Why: Awad's lock — no religious content in Cixy on any product except Halaxis; she declines only genuinely harmful, deceptive or illegal content, never on religious grounds (9/30). Kit = ApixisWallet `sdk/apixis-cixy.*` v2 (3a22244, PR #50) with two hub edits pending canonical: the religion-derived "clean recommendations" rule (gambling) is replaced by "decline only harmful, deceptive or illegal, never on religious grounds", and the character line reads "draws on Arab culture". Ominix links point to https://ominix-app.vercel.app (checked 200 on 2026-10-04 ~6:55 PM CT).
+- Who: Grok (Developer Bot hub), branch `grok/cixy-v2-20261004`, one squash-merged PR.
+- Undo: `git revert <squash sha of this PR>` (sha recorded in the PR), then redeploy prod.
