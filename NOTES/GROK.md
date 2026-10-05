@@ -122,3 +122,9 @@ Recorded by Grok (Developer Bot, notes and status sync at 9:25 PM CT). Every cha
 
 - 7:06 PM, PR #26, `cde987e`: Cixy persona v2 sync (no religious content outside Halaxis) + Ominix link to ominix-app.vercel.app. Undo: `git revert cde987e` on `main`, then redeploy production.
 - 7:17 PM, PR #24, `5bfff4e`: Feed tab: Socixis Social family feed at /feed. Undo: `git revert 5bfff4e` on `main`, then redeploy production.
+
+## 2026-10-04 (CT) — Grok: new accounts only through Apixis ID (branch `grok/apixis-id-only-signup`)
+- Approval: Awad said go at 10:00 PM CT, Oct 4 2026 ("every Ixis product must allow NEW account creation only through Apixis ID", the shared Wallet SSO at apixis-wallet.vercel.app/sso/authorize).
+- What changed: `/signup` now offers only "Sign in with Apixis" (existing `primary-button wide` class, same card), Terms note kept, "Already have an account? Sign in". Removed the unused-after-this server actions `signUpAction` (email + password signup) and `signUpMagicLinkAction` (`src/lib/auth/actions.ts`). `sendMagicLinkAction` (/login email link) now uses `shouldCreateUser: false`: existing accounts still get a link; a new email gets "No Recovra account uses this email yet… use Sign in with Apixis". Password sign-in unchanged. Team invite copy says to create an account with Sign in with Apixis.
+- Not changed: Supabase project setting "Allow new users to sign up" stays ON (Apixis SSO callback may create users through it). Theme, layout and styles unchanged. No Wallet, Stripe or Cixy files touched.
+- Undo: `git revert <squash sha of this PR>` (the sha is recorded in the PR and in /workspace/apixisid/STATUS.md on the box).

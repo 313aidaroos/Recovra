@@ -5,7 +5,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ACTIVE_ORG_COOKIE, getWorkspace, requireLiveWorkspace, writeAuditLog } from "./workspace";
-import { magicLinkRedirect, safeNextPath } from "./redirects";
+import { safeNextPath } from "./redirects";
 import { ADMIN_ROLES, ORGANIZATION_ROLES, type OrganizationRole } from "@/types/workspace";
 
 export type AuthFormState = { error?: string; message?: string };
@@ -30,44 +30,8 @@ export async function signInAction(_previous: AuthFormState, formData: FormData)
   redirect(safeNextPath(formData.get("next")));
 }
 
-export async function signUpAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const supabase = await createServerSupabase();
-  if (!supabase) return { error: "Authentication is not configured for this deployment." };
-
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-  const fullName = String(formData.get("full_name") ?? "").trim();
-  if (!email || password.length < 10) return { error: "Use a valid email and a password of at least 10 characters." };
-
-  const origin = await siteOrigin();
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { data: { full_name: fullName }, emailRedirectTo: magicLinkRedirect(origin, "/onboarding") },
-  });
-  if (error) return { error: error.message };
-  if (data.session) redirect("/onboarding");
-  // The confirmation link verifies the account server-side even if the page it lands on is not
-  // this deployment, so a password sign-in afterwards always works.
-  return { message: `Account created. We emailed a confirmation link to ${email}. Click it, then come back to this site and sign in with your password to create your organization.` };
-}
-
-export async function signUpMagicLinkAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const supabase = await createServerSupabase();
-  if (!supabase) return { error: "Authentication is not configured for this deployment." };
-
-  const email = String(formData.get("email") ?? "").trim();
-  const fullName = String(formData.get("full_name") ?? "").trim();
-  if (!email) return { error: "Enter your email." };
-
-  const origin = await siteOrigin();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { shouldCreateUser: true, data: { full_name: fullName }, emailRedirectTo: magicLinkRedirect(origin, "/onboarding") },
-  });
-  if (error) return { error: error.message };
-  return { message: `Magic signup link sent to ${email}. Open it to enter Recovra and create your organization.` };
-}
+// 2026-10-04 (Grok, Apixis ID only): signUpAction (email + password) and signUpMagicLinkAction were
+// removed. New accounts are created with Apixis ID (/auth/apixis/start); email links are for existing accounts.
 
 export async function sendMagicLinkAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const supabase = await createServerSupabase();
@@ -79,13 +43,18 @@ export async function sendMagicLinkAction(_previous: AuthFormState, formData: Fo
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/dashboard";
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { 
-      shouldCreateUser: true,
+    options: {
+      shouldCreateUser: false, // existing accounts only; new accounts use Apixis ID
       emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(`/set-password?next=${encodeURIComponent(next)}`)}`,
     },
   });
-  if (error) return { error: error.message };
-  return { message: `Check ${email} — the sign-in link is on its way. First time? You will choose a password after it opens.` };
+  if (error) {
+    if (/signups? not allowed|otp_disabled|user not found/i.test(`${error.code ?? ""} ${error.message}`)) {
+      return { error: "No Recovra account uses this email yet. New here? Use Sign in with Apixis to create your account." };
+    }
+    return { error: error.message };
+  }
+  return { message: `Check ${email} — the sign-in link is on its way.` };
 }
 
 export async function changePasswordAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -162,7 +131,7 @@ export async function addMemberAction(_previous: AuthFormState, formData: FormDa
   if (error) return { error: error.message };
   const result = data as { status: string };
   if (result.status === "user_not_found") {
-    return { error: `${email} has not created a Recovra account yet. Ask them to sign up, then add them again.` };
+    return { error: `${email} has not created a Recovra account yet. Ask them to create one with Sign in with Apixis, then add them again.` };
   }
   return { message: `${email} now has the ${role} role.` };
 }
