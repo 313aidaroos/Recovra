@@ -128,3 +128,9 @@ Recorded by Grok (Developer Bot, notes and status sync at 9:25 PM CT). Every cha
 - What changed: `/signup` now offers only "Sign in with Apixis" (existing `primary-button wide` class, same card), Terms note kept, "Already have an account? Sign in". Removed the unused-after-this server actions `signUpAction` (email + password signup) and `signUpMagicLinkAction` (`src/lib/auth/actions.ts`). `sendMagicLinkAction` (/login email link) now uses `shouldCreateUser: false`: existing accounts still get a link; a new email gets "No Recovra account uses this email yet… use Sign in with Apixis". Password sign-in unchanged. Team invite copy says to create an account with Sign in with Apixis.
 - Not changed: Supabase project setting "Allow new users to sign up" stays ON (Apixis SSO callback may create users through it). Theme, layout and styles unchanged. No Wallet, Stripe or Cixy files touched.
 - Undo: `git revert <squash sha of this PR>` (the sha is recorded in the PR and in /workspace/apixisid/STATUS.md on the box).
+
+## 2026-10-05 overnight provenance, Oct 4 9:35 PM to Oct 5 12:25 AM (CT)
+
+Recorded by Grok (Developer Bot, notes and status sync at 12:25 AM CT on Oct 5). Each change below either has its own detailed entry earlier in this file (written by whoever made it) or is described here. Commits under the shared `313aidaroos` account were made by the bot or lead named in the detailed entry. Every production deployment for this repo was Ready at the time of this sync. Text only, no code or settings changed.
+
+- Oct 4 10:29 PM, PR #27, `19108bd`: Apixis ID is the only way to create a Recovra account. Undo: `git revert 19108bd` on `main`, then redeploy production.
