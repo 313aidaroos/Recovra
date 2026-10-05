@@ -115,3 +115,10 @@ The entries below record the day's observed commits and merged PRs. Existing det
 - What: squash-merge of PR #24 (feed files + Feed nav entry only); Vercel's Git integration deploys main to production.
 - Who: Grok Bot (for Awad).
 - Undo: `git revert <squash sha of PR #24>` on main and push (the squash sha is on the PR page and in /workspace/feed/STATUS.md), or in Vercel promote the previous production deployment (instant rollback) and then revert.
+
+## 2026-10-04 evening provenance, 6:57 to 9:25 PM (CT)
+
+Recorded by Grok (Developer Bot, notes and status sync at 9:25 PM CT). Every change below already has a detailed entry in this file or in the matching lead note; this section adds the exact commit, PR number, and undo pointer. All commits were pushed under the shared `313aidaroos` GitHub account; the detailed entries say which bot or lead made each one. Text only, no code or settings changed.
+
+- 7:06 PM, PR #26, `cde987e`: Cixy persona v2 sync (no religious content outside Halaxis) + Ominix link to ominix-app.vercel.app. Undo: `git revert cde987e` on `main`, then redeploy production.
+- 7:17 PM, PR #24, `5bfff4e`: Feed tab: Socixis Social family feed at /feed. Undo: `git revert 5bfff4e` on `main`, then redeploy production.
