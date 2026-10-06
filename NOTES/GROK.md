@@ -134,3 +134,8 @@ Recorded by Grok (Developer Bot, notes and status sync at 9:25 PM CT). Every cha
 Recorded by Grok (Developer Bot, notes and status sync at 12:25 AM CT on Oct 5). Each change below either has its own detailed entry earlier in this file (written by whoever made it) or is described here. Commits under the shared `313aidaroos` account were made by the bot or lead named in the detailed entry. Every production deployment for this repo was Ready at the time of this sync. Text only, no code or settings changed.
 
 - Oct 4 10:29 PM, PR #27, `19108bd`: Apixis ID is the only way to create a Recovra account. Undo: `git revert 19108bd` on `main`, then redeploy production.
+
+## 2026-10-06 — Merging into Deduxis; pricing locked
+- Recovra is merging into Deduxis as its "Recover" section (locked by Awad). See NOTES/PRICING.md.
+- Old Wallet SKUs recovra.intel.monthly / recovra.intel.growth to be retired.
+- Code merge into Deduxis, redirect, and SKU retirement still to do.
