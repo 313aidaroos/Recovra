@@ -1,5 +1,7 @@
 # Recovra Agent Instructions
 
+> **AI Receptionist (D18, 2026-10-06):** read `docs/APIXIS_FAMILY.md` → "AI Receptionist" before building anything phone-related.
+
 ## Mission
 Build Recovra into a multi-vertical Recovery Intelligence Platform, not a single-purpose freight app.
 
